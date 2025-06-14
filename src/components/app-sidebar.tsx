@@ -56,7 +56,7 @@ export function AppSidebar({selectedItem, setSelectedItem, ...props }: AppSideba
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Viamar</span>
-                  <span className="truncate text-xs">Restaurante</span>
+                  <span className="truncate text-xs">Agencia de Ferry</span>
                 </div>
               </a>
             </SidebarMenuButton>
