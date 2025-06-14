@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Easy-Ferry",
-  description: "Una descripción de dos líneas de una aplicación para administrar las ventas de los ferries de transporte público marítimo.",
+  description: "Aplicación web para gestionar y monitorear las ventas de boletos en ferries de transporte público marítimo. Permite controlar ingresos, rutas, horarios y reportes en tiempo real.",
 };
 
 export default function RootLayout({
