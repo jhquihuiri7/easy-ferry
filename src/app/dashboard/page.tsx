@@ -7,14 +7,15 @@ import { useRouter } from "next/navigation";
 import { Dashboard } from "@/components/dashboard";
 import { SellCard } from "@/components/sell-card";
 import { SellsTable } from "@/components/sells-table";
+import { SellsTableBase } from "@/components/sells-table-base";
 
 
-type VariableType = "opcion1" | "opcion2"| "opcion3";// | "opcion4";
+type VariableType = "opcion1" | "opcion2"| "opcion3" | "opcion4";
 
 const Componente1 = () => <Dashboard/>;
 const Componente2 = () => <SellCard/>;
 const Componente3 = () => <SellsTable/>;
-//const Componente4 = () => <DataTableUsers/>;
+const Componente4 = () => <SellsTableBase/>;
 
 
 
@@ -22,7 +23,7 @@ const componenteMapa: Record<VariableType, React.FC> = {
   opcion1: Componente1,
   opcion2: Componente2,
   opcion3: Componente3,
-  //opcion4: Componente4
+  opcion4: Componente4
 };
 
 const MapaComponentes = ({ variable }: { variable: VariableType }) => {
@@ -46,6 +47,7 @@ useEffect(() => {
     "Panel Principal": "opcion1",
     "Ventas": "opcion2",
     "Reportes": "opcion3",
+    "Base": "opcion4",
   };
 
   return (

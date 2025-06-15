@@ -20,11 +20,40 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (event: React.FormEvent) => {
-    event.preventDefault(); // Evita que el formulario se envíe automáticamente
-    //setLoading(true)
-    router.push("/dashboard");
-
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch("https://easy-ferry.uc.r.appspot.com/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+    
+      const data = await response.json();
+    
+      if (!response.ok) {
+        throw new Error(data.error || "Error al iniciar sesión");
+      }
+    
+      // Guarda el token JWT en localStorage
+      localStorage.setItem("token", data.token);
+    
+      // Redirige al dashboard
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
   
 
   return (
