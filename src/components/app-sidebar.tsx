@@ -29,17 +29,15 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({selectedItem, setSelectedItem, ...props }: AppSidebarProps) {
   const [email, setEmail] = React.useState<string | null>(null);
   const [navMain, setNavMain] = React.useState<Menu[]>([]);
+  const [business, setBusiness] = React.useState("")
 
   React.useEffect(() => {
     const menuManager = new NavMenuManager("owner");
     setNavMain(menuManager.getNavMenu())
+    const business = localStorage.getItem("easyferry-business") || ""
+    setBusiness(business)
   }, []);
 
-  const user = {
-    name: "test" + " " + "name",
-    email: email ? email : "m@example.com",
-    avatar: "/vercel.svg",
-  };
 
   return (
     <Sidebar
@@ -55,7 +53,7 @@ export function AppSidebar({selectedItem, setSelectedItem, ...props }: AppSideba
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Viamar</span>
+                  <span className="truncate font-medium">{business}</span>
                   <span className="truncate text-xs">Agencia de Ferry</span>
                 </div>
               </a>
@@ -67,7 +65,7 @@ export function AppSidebar({selectedItem, setSelectedItem, ...props }: AppSideba
         <NavMain items={navMain} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser/>
       </SidebarFooter>
     </Sidebar>
   );

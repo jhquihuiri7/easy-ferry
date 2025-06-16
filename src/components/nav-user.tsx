@@ -30,23 +30,32 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react"
 
 
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter();
 
+  const [user, setUser] = useState({
+    name: "",
+    email: "",
+  })
+
+  useEffect(() => {
+    const name = localStorage.getItem("easyferry-name") || ""
+    const email = localStorage.getItem("easyferry-email") || ""
+
+    setUser({ name, email})
+  }, [])
+
+
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Elimina el token
+    localStorage.removeItem("easyferry-token"); // Elimina el token
+    localStorage.removeItem("easyferry-email");
+    localStorage.removeItem("easyferry-name");
+    localStorage.removeItem("easyferry-business");
     router.push("/"); // Redirige a la página principal
   };
 
@@ -60,7 +69,7 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={""} alt={user.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">

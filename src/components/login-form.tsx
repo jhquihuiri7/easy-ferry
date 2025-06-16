@@ -43,7 +43,10 @@ export function LoginForm({
       }
     
       // Guarda el token JWT en localStorage
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("easyferry-token", data.token);
+      localStorage.setItem("easyferry-email", data.email);
+      localStorage.setItem("easyferry-name", data.name);
+      localStorage.setItem("easyferry-business", data.business);
     
       // Redirige al dashboard
       router.push("/dashboard");

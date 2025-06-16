@@ -41,7 +41,7 @@ export function SellCard() {
     e.preventDefault()
 
     const data = {
-      business_id: "fsadsfgsdgfdsfgfdssdfcdw",
+      business_id: 2,
       name,
       age: 23,
       route,
@@ -49,6 +49,7 @@ export function SellCard() {
       ferry,
       intermediary,
       seller: 3,
+      date:date
     }
 
     try {
