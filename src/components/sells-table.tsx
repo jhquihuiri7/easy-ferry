@@ -148,12 +148,13 @@ export function SellsTable() {
 
   React.useEffect(() => {
     async function fetchSales() {
+      const business = localStorage.getItem("easyferry-business") || ""
       setLoading(true)
       setError(null)
 
       try {
         const response = await fetch(
-          "https://easy-ferry.uc.r.appspot.com/get-sales?business_id=fsadsfgsdgfdsfgfdssdfcdw",
+          `https://easy-ferry.uc.r.appspot.com/get-sales?business=${business}`,
           {
             method: "GET",
             headers: {
@@ -229,7 +230,7 @@ export function SellsTable() {
                         "Content-Type": "text/plain",
                       },
                       body: JSON.stringify({
-                        business_id: "fsadsfgsdgfdsfgfdssdfcdw",
+                        business_id: 1,
                       }),
                     });
                   

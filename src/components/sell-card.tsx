@@ -36,22 +36,26 @@ export function SellCard() {
   const [time, setTime] = React.useState("")
   const [ferry, setFerry] = React.useState("")
   const [intermediary, setIntermediary] = React.useState("")
+  const [business, setBusiness] = React.useState("")
+  const [email, setEmail] = React.useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
+    const business = localStorage.getItem("easyferry-business") || ""
+    const email = localStorage.getItem("easyferry-email") || ""
     e.preventDefault()
 
     const data = {
-      business_id: 2,
+      business: business,
       name,
       age: 23,
       route,
       time,
       ferry,
       intermediary,
-      seller: 3,
-      date:date
+      seller_email: email,
+      date:date?.toISOString().split('T')[0]
     }
-
+    console.log(data)
     try {
       const response = await fetch("https://easy-ferry.uc.r.appspot.com/sales", {
         method: "PUT",
