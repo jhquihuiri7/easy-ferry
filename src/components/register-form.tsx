@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { GalleryVerticalEnd, Loader2 } from "lucide-react"
+import { Ship, Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -79,7 +79,7 @@ export function RegisterForm({
               className="flex flex-col items-center gap-2 font-medium"
             >
               <div className="flex size-8 items-center justify-center rounded-md">
-                <GalleryVerticalEnd className="size-6" />
+                <Ship className="size-6" />
               </div>
               <span className="sr-only">Easy Ferry</span>
             </a>
