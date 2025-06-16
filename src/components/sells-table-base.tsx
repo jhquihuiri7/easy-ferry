@@ -13,7 +13,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { ArrowUpDown, ChevronDown, MoreHorizontal, Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -33,13 +33,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Loader2 } from "lucide-react"
 
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
+import { format, addDays, subDays } from "date-fns"
 import { es } from "date-fns/locale"
-import { type DateRange } from "react-day-picker"
 
 export type Sale = {
   id: number
@@ -147,7 +145,6 @@ export const columns: ColumnDef<Sale>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const sale = row.original
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -157,11 +154,10 @@ export const columns: ColumnDef<Sale>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(sale.id.toString())}>
-              Copy ID
+              Editar
             </DropdownMenuItem>
-            <DropdownMenuItem>View details</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -182,8 +178,10 @@ export function SellsTableBase() {
   const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({})
   const [deleting, setDeleting] = React.useState(false)
 
-  const [dateRange, setDateRange] = React.useState<DateRange | undefined>()
-  const [calendarOpen, setCalendarOpen] = React.useState(false)
+  const [startDate, setStartDate] = React.useState<Date | undefined>(subDays(new Date(), 5))
+  const [endDate, setEndDate] = React.useState<Date | undefined>(addDays(new Date(), 5))
+  const [startCalendarOpen, setStartCalendarOpen] = React.useState(false)
+  const [endCalendarOpen, setEndCalendarOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (filterValue) {
@@ -193,26 +191,32 @@ export function SellsTableBase() {
     }
   }, [filterColumn, filterValue])
 
-  React.useEffect(() => {
-    async function fetchSales() {
-      const business = localStorage.getItem("easyferry-business") || ""
-      setLoading(true)
-      setError(null)
-      try {
-        const response = await fetch(`https://easy-ferry.uc.r.appspot.com/get-sales?business=${business}`, {
+  const fetchSales = async () => {
+    const business = localStorage.getItem("easyferry-business") || ""
+    const fromDate = startDate ? format(startDate, "yyyy-MM-dd") : ""
+    const toDate = endDate ? format(endDate, "yyyy-MM-dd") : ""
+
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(
+        `https://easy-ferry.uc.r.appspot.com/get-sales?business=${business}&start_date=${fromDate}&end_date=${toDate}`,
+        {
           method: "GET",
           headers: { "Content-Type": "application/json" },
-        })
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`)
-        const result = await response.json()
-        setData(result.data)
-      } catch (err: any) {
-        setError(err.message || "Error fetching sales data")
-      } finally {
-        setLoading(false)
-      }
+        }
+      )
+      if (!response.ok) throw new Error(`Error: ${response.statusText}`)
+      const result = await response.json()
+      setData(result.data)
+    } catch (err: any) {
+      setError(err.message || "Error fetching sales data")
+    } finally {
+      setLoading(false)
     }
+  }
 
+  React.useEffect(() => {
     fetchSales()
   }, [])
 
@@ -230,13 +234,10 @@ export function SellsTableBase() {
 
       if (!response.ok) throw new Error(`Error deleting sales: ${response.statusText}`)
 
-      const result = await response.json()
-      console.log("Deleted successfully:", result)
-
+      await response.json()
       setData((prev) => prev.filter((item) => !selectedIds.includes(item.id)))
       setRowSelection({})
     } catch (error: any) {
-      console.error("Failed to delete:", error)
       alert("Hubo un error al eliminar los registros.")
     } finally {
       setDeleting(false)
@@ -280,7 +281,6 @@ export function SellsTableBase() {
       {!loading && !error && (
         <>
           <div className="flex items-center justify-between py-4 flex-wrap gap-4">
-            {/* Left: Filter controls */}
             <div className="flex items-center gap-4 flex-wrap">
               <Input
                 placeholder={`Filter by ${filterColumn}...`}
@@ -314,38 +314,43 @@ export function SellsTableBase() {
               </DropdownMenu>
             </div>
 
-            {/* Right: Date picker + Refresh */}
             <div className="flex items-center gap-4 flex-wrap">
-              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="text-left font-normal w-[240px]">
-                    {dateRange?.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "yyyy/MM/dd")} - {format(dateRange.to, "yyyy/MM/dd")}
-                        </>
-                      ) : (
-                        format(dateRange.from, "yyyy/MM/dd")
-                      )
-                    ) : (
-                      "Rango de fechas"
-                    )}
-                    <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange?.from}
-                    selected={dateRange}
-                    onSelect={setDateRange}
-                    numberOfMonths={2}
-                    locale={es}
-                  />
-                </PopoverContent>
-              </Popover>
-              <Button variant="secondary" disabled={loading}>
+              <div className="flex items-center gap-2">
+                <Popover open={startCalendarOpen} onOpenChange={setStartCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="text-left font-normal w-[120px]">
+                      {startDate ? format(startDate, "yyyy/MM/dd") : "Desde"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={setStartDate}
+                      initialFocus
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <span>a</span>
+                <Popover open={endCalendarOpen} onOpenChange={setEndCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="text-left font-normal w-[120px]">
+                      {endDate ? format(endDate, "yyyy/MM/dd") : "Hasta"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      initialFocus
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <Button variant="secondary" disabled={loading} onClick={fetchSales}>
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="animate-spin h-4 w-4" />
@@ -361,11 +366,11 @@ export function SellsTableBase() {
           <div className="rounded-md border">
             <Table>
               <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                {table.getHeaderGroups().map((hg) => (
+                  <TableRow key={hg.id}>
+                    {hg.headers.map((head) => (
+                      <TableHead key={head.id}>
+                        {head.isPlaceholder ? null : flexRender(head.column.columnDef.header, head.getContext())}
                       </TableHead>
                     ))}
                   </TableRow>
@@ -396,10 +401,10 @@ export function SellsTableBase() {
               {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
             </div>
             <div className="space-x-2">
-              <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+              <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} type="button">
                 Previous
               </Button>
-              <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+              <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} type="button">
                 Next
               </Button>
             </div>
