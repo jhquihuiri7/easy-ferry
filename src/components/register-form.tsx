@@ -40,7 +40,7 @@ export function RegisterForm({
     }
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/register", {
+      const response = await fetch("https://easy-ferry.uc.r.appspot.com/register", {
         method: "POST",
         headers: {
           "Content-Type": "text/plain",
