@@ -19,25 +19,23 @@ import {
 
 import { NavMenuManager, Menu } from "@/constants/menu"
 
-
-
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   selectedItem: string;
   setSelectedItem: (item: string) => void;
+  notifications: any[]; // ✅ Agregado
 }
 
-export function AppSidebar({selectedItem, setSelectedItem, ...props }: AppSidebarProps) {
+export function AppSidebar({ selectedItem, setSelectedItem, notifications, ...props }: AppSidebarProps) {
   const [email, setEmail] = React.useState<string | null>(null);
   const [navMain, setNavMain] = React.useState<Menu[]>([]);
   const [business, setBusiness] = React.useState("")
 
   React.useEffect(() => {
     const menuManager = new NavMenuManager("owner");
-    setNavMain(menuManager.getNavMenu())
-    const business = localStorage.getItem("easyferry-business") || ""
-    setBusiness(business)
+    setNavMain(menuManager.getNavMenu());
+    const business = localStorage.getItem("easyferry-business") || "";
+    setBusiness(business);
   }, []);
-
 
   return (
     <Sidebar
@@ -65,7 +63,7 @@ export function AppSidebar({selectedItem, setSelectedItem, ...props }: AppSideba
         <NavMain items={navMain} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser/>
+        <NavUser notifications={notifications} /> {/* ✅ Se pasan aquí */}
       </SidebarFooter>
     </Sidebar>
   );

@@ -6,8 +6,8 @@ import {
   ChevronsUpDown,
   CreditCard,
   LogOut,
-  Sparkles,
 } from "lucide-react"
+import { toast, Toaster } from "sonner"
 
 import {
   Avatar,
@@ -29,14 +29,16 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
+interface NavUserProps {
+  notifications: any[]
+}
 
-
-export function NavUser() {
+export function NavUser({ notifications }: NavUserProps) {
   const { isMobile } = useSidebar()
-  const router = useRouter();
+  const router = useRouter()
 
   const [user, setUser] = useState({
     name: "",
@@ -47,17 +49,32 @@ export function NavUser() {
     const name = localStorage.getItem("easyferry-name") || ""
     const email = localStorage.getItem("easyferry-email") || ""
 
-    setUser({ name, email})
+    setUser({ name, email })
   }, [])
 
-
   const handleLogout = () => {
-    localStorage.removeItem("easyferry-token"); // Elimina el token
-    localStorage.removeItem("easyferry-email");
-    localStorage.removeItem("easyferry-name");
-    localStorage.removeItem("easyferry-business");
-    router.push("/"); // Redirige a la página principal
-  };
+    localStorage.removeItem("easyferry-token")
+    localStorage.removeItem("easyferry-email")
+    localStorage.removeItem("easyferry-name")
+    localStorage.removeItem("easyferry-business")
+    router.push("/")
+  }
+
+  const handleShowNotifications = () => {
+    if (notifications.length === 0) {
+      return
+    }
+
+    notifications.forEach((notif, index) => {
+      toast(`Notificación ${index + 1}`, {
+        description: `${notif.message} (${notif.date})`,
+        action: {
+          label: "Cerrar",
+          onClick: () => console.log("Notificación cerrada"),
+        },
+      })
+    })
+  }
 
   return (
     <SidebarMenu>
@@ -70,7 +87,11 @@ export function NavUser() {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={""} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {user.name
+                    ? user.name.split(" ").map(word => word[0]).join("")
+                    : "CN"}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -88,7 +109,11 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarFallback className="rounded-lg">{user.name.split(" ").map(word => word[0]).join("")}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {user.name
+                      ? user.name.split(" ").map(word => word[0]).join("")
+                      : "CN"}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -97,21 +122,25 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-            </DropdownMenuGroup>
+            <DropdownMenuGroup />
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <BadgeCheck color="#00e600"/>
+                <BadgeCheck color="#00e600" />
                 Cuenta
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard />
                 Pagos
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="relative" onClick={handleShowNotifications}>
                 <Bell />
                 Notificaciones
+                {notifications.length > 0 && (
+                  <span className="absolute right-2 top-2 inline-flex items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-semibold text-white">
+                    {notifications.length}
+                  </span>
+                )}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
