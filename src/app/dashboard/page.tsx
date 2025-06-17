@@ -43,7 +43,7 @@ export default function Page() {
         return;
       }
 
-      const response = await fetch(`http://127.0.0.1:8000/get-notifications?business=${business}`, {
+      const response = await fetch(`https://easy-ferry.uc.r.appspot.com/get-notifications?business=${business}`, {
         method: "GET",
         headers: {
           "Content-Type": "text/plain",
