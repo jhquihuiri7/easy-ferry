@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -26,6 +25,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 export function SellCard() {
   const [open, setOpen] = React.useState(false)
@@ -40,11 +41,22 @@ export function SellCard() {
   const [business, setBusiness] = React.useState("")
   const [email, setEmail] = React.useState("")
   const [notes, setNotes] = React.useState("")
+  const [isLoading, setIsLoading] = React.useState(false)
+
+  const isFormValid = 
+    name.trim() !== '' && 
+    date !== undefined && 
+    route !== '' && 
+    time !== '' && 
+    price !== '' && 
+    ferry !== '';
 
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    
     const business = localStorage.getItem("easyferry-business") || ""
     const email = localStorage.getItem("easyferry-email") || ""
-    e.preventDefault()
 
     const data = {
       business: business,
@@ -56,10 +68,10 @@ export function SellCard() {
       ferry,
       intermediary,
       seller_email: email,
-      date:date?.toISOString().split('T')[0],
+      date: date?.toISOString().split('T')[0],
       notes
     }
-    console.log(data)
+
     try {
       const response = await fetch("https://easy-ferry.uc.r.appspot.com/sales", {
         method: "PUT",
@@ -69,25 +81,35 @@ export function SellCard() {
         body: JSON.stringify(data),
       })
 
-      if (!response.ok) {
-        throw new Error("Error en el envío de datos")
+      if (response.ok) {
+        toast.success("Reserva agregada con éxito", {
+          description: "La reserva ha sido registrada correctamente.",
+        })
+
+        setName("")
+        setAge("")
+        setPrice("")
+        setRoute("")
+        setTime("")
+        setFerry("")
+        setIntermediary("")
+        setDate(undefined)
+        setNotes("")
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.message || "Ocurrió un error al intentar registrar la reserva."
+        
+        toast.error("Error al registrar la reserva", {
+          description: `Código ${response.status}: ${errorMessage}`,
+        })
       }
-
-      const result = await response.json()
-      console.log("Venta registrada:", result)
-
-      // Limpieza del formulario (opcional)
-      setName("")
-      setAge("")
-      setPrice("")
-      setRoute("")
-      setTime("")
-      setFerry("")
-      setIntermediary("")
-      setDate(undefined)
-      setNotes("")
     } catch (err) {
       console.error(err)
+      toast.error("Error de conexión", {
+        description: "La reserva no pudo ser ingresada por problemas de conexión. Por favor intenta nuevamente.",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -156,7 +178,7 @@ export function SellCard() {
               <div className="flex gap-4">
                 <div className="flex-1 grid gap-2">
                   <Label htmlFor="route">Ruta</Label>
-                  <Select value={route} onValueChange={setRoute}>
+                  <Select value={route} onValueChange={setRoute} required>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecciona una ruta" />
                     </SelectTrigger>
@@ -171,7 +193,7 @@ export function SellCard() {
                 </div>
                 <div className="flex-1 grid gap-2">
                   <Label htmlFor="time">Hora</Label>
-                  <Select value={time} onValueChange={setTime}>
+                  <Select value={time} onValueChange={setTime} required>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecciona un horario" />
                     </SelectTrigger>
@@ -192,6 +214,7 @@ export function SellCard() {
                     placeholder="Precio"
                     value={price}
                     onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                    required
                   />
                 </div>
               </div>
@@ -200,7 +223,7 @@ export function SellCard() {
               <div className="flex gap-4">
                 <div className="flex-1 grid gap-2">
                   <Label htmlFor="ferry">Lancha</Label>
-                  <Select value={ferry} onValueChange={setFerry}>
+                  <Select value={ferry} onValueChange={setFerry} required>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecciona una lancha" />
                     </SelectTrigger>
@@ -235,11 +258,28 @@ export function SellCard() {
                 </div>
               </div>
             </div>
-            <CardFooter className="flex-col gap-2 mt-6">
-              <Button type="submit" className="w-full">
-                Agregar
+            <div className="mt-6 relative">
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading || !isFormValid}
+                variant={!isFormValid && !isLoading ? "outline" : "default"}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    Procesando...
+                  </>
+                ) : (
+                  "Agregar"
+                )}
               </Button>
-            </CardFooter>
+              {!isFormValid && !isLoading && (
+                <div className="absolute -bottom-6 left-0 text-xs text-muted-foreground">
+                  Complete todos los campos requeridos
+                </div>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>
