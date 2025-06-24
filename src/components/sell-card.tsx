@@ -32,12 +32,14 @@ export function SellCard() {
   const [date, setDate] = React.useState<Date | undefined>(undefined)
   const [name, setName] = React.useState("")
   const [age, setAge] = React.useState<number | "">("")
+  const [price, setPrice] = React.useState<number | "">("")
   const [route, setRoute] = React.useState("")
   const [time, setTime] = React.useState("")
   const [ferry, setFerry] = React.useState("")
   const [intermediary, setIntermediary] = React.useState("")
   const [business, setBusiness] = React.useState("")
   const [email, setEmail] = React.useState("")
+  const [notes, setNotes] = React.useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     const business = localStorage.getItem("easyferry-business") || ""
@@ -47,13 +49,15 @@ export function SellCard() {
     const data = {
       business: business,
       name,
-      age: 23,
+      age: age === "" ? 0 : age,
+      price: price === "" ? 0 : price,
       route,
       time,
       ferry,
       intermediary,
       seller_email: email,
-      date:date?.toISOString().split('T')[0]
+      date:date?.toISOString().split('T')[0],
+      notes
     }
     console.log(data)
     try {
@@ -75,11 +79,13 @@ export function SellCard() {
       // Limpieza del formulario (opcional)
       setName("")
       setAge("")
+      setPrice("")
       setRoute("")
       setTime("")
       setFerry("")
       setIntermediary("")
       setDate(undefined)
+      setNotes("")
     } catch (err) {
       console.error(err)
     }
@@ -87,7 +93,7 @@ export function SellCard() {
 
   return (
     <div className="flex items-center justify-center overflow-hidden">
-      <Card className="w-full max-w-xl">
+      <Card className="w-full max-w-3xl">
         <CardHeader>
           <CardTitle>Ingresa una nueva venta</CardTitle>
           <CardDescription>Proporciona los datos requeridos</CardDescription>
@@ -134,6 +140,16 @@ export function SellCard() {
                     </PopoverContent>
                   </Popover>
                 </div>
+                <div className="flex-1 grid gap-2">
+                  <Label htmlFor="age">Edad</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    placeholder="Edad"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value === "" ? "" : Number(e.target.value))}
+                  />
+                </div>
               </div>
 
               {/* Fila 2 */}
@@ -168,6 +184,16 @@ export function SellCard() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="flex-1 grid gap-2">
+                  <Label htmlFor="price">Precio ($)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder="Precio"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                  />
+                </div>
               </div>
 
               {/* Fila 3 */}
@@ -195,6 +221,16 @@ export function SellCard() {
                     placeholder="Opcional"
                     value={intermediary}
                     onChange={(e) => setIntermediary(e.target.value)}
+                  />
+                </div>
+                <div className="flex-1 grid gap-2">
+                  <Label htmlFor="notes">Notas</Label>
+                  <Input
+                    id="notes"
+                    type="text"
+                    placeholder="Notas adicionales"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
                   />
                 </div>
               </div>
