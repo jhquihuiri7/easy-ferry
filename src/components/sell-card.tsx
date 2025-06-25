@@ -41,6 +41,9 @@ export function SellCard() {
   const [business, setBusiness] = React.useState("")
   const [email, setEmail] = React.useState("")
   const [notes, setNotes] = React.useState("")
+  const [passport, setPassport] = React.useState("")
+  const [phone, setPhone] = React.useState("")
+  const [status, setStatus] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
 
   const isFormValid = 
@@ -69,7 +72,10 @@ export function SellCard() {
       intermediary,
       seller_email: email,
       date: date?.toISOString().split('T')[0],
-      notes
+      notes,
+      passport,
+      phone,
+      status
     }
 
     try {
@@ -95,6 +101,9 @@ export function SellCard() {
         setIntermediary("")
         setDate(undefined)
         setNotes("")
+        setPassport("")
+        setPhone("")
+        setStatus("")
       } else {
         const errorData = await response.json().catch(() => ({}))
         const errorMessage = errorData.message || "Ocurrió un error al intentar registrar la reserva."
@@ -255,6 +264,46 @@ export function SellCard() {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                   />
+                </div>
+              </div>
+
+              {/* Fila 4 - Nueva fila agregada */}
+              <div className="flex gap-4">
+                <div className="flex-1 grid gap-2">
+                  <Label htmlFor="passport">Pasaporte</Label>
+                  <Input
+                    id="passport"
+                    type="text"
+                    placeholder="Número de pasaporte"
+                    value={passport}
+                    onChange={(e) => setPassport(e.target.value)}
+                  />
+                </div>
+                <div className="flex-1 grid gap-2">
+                  <Label htmlFor="phone">Teléfono</Label>
+                  <Input
+                    id="phone"
+                    type="text"
+                    placeholder="Número de teléfono"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+                <div className="flex-1 grid gap-2">
+                  <Label htmlFor="status">Estado</Label>
+                  <Select value={status} onValueChange={setStatus}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecciona un estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Estados</SelectLabel>
+                        <SelectItem value="pending">Pendiente</SelectItem>
+                        <SelectItem value="confirmed">Confirmado</SelectItem>
+                        <SelectItem value="cancelled">Cancelado</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>

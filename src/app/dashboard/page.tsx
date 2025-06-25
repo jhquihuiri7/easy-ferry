@@ -57,19 +57,43 @@ export default function Page() {
       const data = await response.json();
       const notifs = data.notifications;
 
-      if (notifs && notifs.length > 0) {
-        console.log("Notificaciones recibidas:", notifs);
-
-        const primera = notifs[0]; // Puedes personalizar esto si quieres mostrar más de una
-
-        toast("Nueva notificación", {
-          description: `${primera.message} (${primera.date})`,
-          action: {
-            label: "Ver",
-            onClick: () => console.log("Ver notificaciones"),
-          },
-        });
-      }
+      // Filtra notificaciones no leídas (read === false)
+    const unreadNotifs = notifs.filter((notif: { read: boolean }) => !notif.read);
+    console.log(unreadNotifs);
+    // Mostrar cada notificación no leída
+    unreadNotifs.forEach((notif: any) => {
+      toast("Nueva notificación", {
+        description: `${notif.message} (${notif.date})`, 
+        action: {
+          label: "Marcar como leída",
+          onClick: async () => {
+            try {
+              const response = await fetch('https://easy-ferry.uc.r.appspot.com/mark-as-read-notifications', {
+                method: 'POST',
+                headers: {
+              'Content-Type': 'application/json',
+              // Si estás usando autenticación, añade el token aquí
+              // 'Authorization': `Bearer ${yourAuthToken}`
+                },
+                body: JSON.stringify({
+              notification_id: notif.id  // Asegúrate que notif tiene un campo id
+                })
+              });
+            
+              const data = await response.json();
+            
+              if (!response.ok) {
+                throw new Error(data.error || 'Error al marcar como leída');
+              }
+            
+            } catch (error) {
+          console.error('Error:', error);
+          toast.error("Error al marcar la notificación como leída");
+            }
+          }
+        },
+      });
+    });
 
       setNotifications(notifs);
     } catch (error) {

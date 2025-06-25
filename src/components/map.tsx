@@ -51,7 +51,10 @@ export default function MapWithCustomMarkers() {
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v11',
         center: [points[0].long, points[0].lat],
-        zoom: 8
+        zoom: 12,
+        pitch: 60,
+        bearing: -20,
+        antialias: true
       })
 
       map.on('load', () => {

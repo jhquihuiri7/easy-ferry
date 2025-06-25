@@ -31,7 +31,7 @@ export class NavMenuManager {
           { title: "Panel Principal", url: "/panel-principal" },
           { title: "Ventas", url: "/ventas" },
           { title: "Reportes", url: "/reportes" },
-          { title: "Base", url: "/base" }
+          { title: "Otros", url: "/otros" }
         ],
       }
     ];
@@ -40,7 +40,7 @@ export class NavMenuManager {
       "Restaurantes": ["owner"],
       "Ventas": ["owner"],
       "Reportes": ["owner"],
-      "Base": ["owner"],
+      "Otros": ["owner"],
       "Usuarios": ["owner","admin"],
       "Equipo": ["owner"],
       "Administrar Menu": ["owner"],
