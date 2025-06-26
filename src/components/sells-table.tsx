@@ -13,7 +13,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Loader2 } from "lucide-react"
+import { ArrowUpDown, ChevronDown, MoreHorizontal, Loader2, Ticket, Edit } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -165,8 +165,13 @@ export const columns: ColumnDef<Sale>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(sale.id.toString())}>
+            <DropdownMenuItem>
+              <Edit className="mr-2 h-4 w-4" />
               Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Ticket className="mr-2 h-4 w-4" />
+              Ticket
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -174,62 +179,6 @@ export const columns: ColumnDef<Sale>[] = [
     },
   },
 ]
-
-function Calendar24() {
-  const [open, setOpen] = React.useState(false)
-  const [date, setDate] = React.useState<Date | undefined>(undefined)
-  const [time, setTime] = React.useState("") // Estado para almacenar la hora seleccionada
-
-  return (
-    <div className="flex gap-4">
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="date-picker" className="px-1">
-          Date
-        </Label>
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              id="date-picker"
-              className="w-32 justify-between font-normal"
-            >
-              {date ? date.toLocaleDateString() : "Select date"}
-              <ChevronDown />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              captionLayout="dropdown"
-              onSelect={(date) => {
-                setDate(date)
-                setOpen(false)
-              }}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-      <div className="flex flex-col gap-3">
-        <Label htmlFor="time-picker" className="px-1">
-          Time
-        </Label>
-        <Select value={time} onValueChange={setTime}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Selecciona una hora" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectLabel>Hora</SelectLabel>
-              <SelectItem value="7">AM</SelectItem>
-              <SelectItem value="15">PM</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
-  )
-}
 
 export function SellsTable() {
   const [data, setData] = React.useState<Sale[]>([])
@@ -248,6 +197,11 @@ export function SellsTable() {
   const [endDate, setEndDate] = React.useState<Date | undefined>(addDays(new Date(), 5))
   const [startCalendarOpen, setStartCalendarOpen] = React.useState(false)
   const [endCalendarOpen, setEndCalendarOpen] = React.useState(false)
+
+  // Estados para el reporte
+  const [reportDate, setReportDate] = React.useState<Date | undefined>(new Date())
+  const [reportTime, setReportTime] = React.useState("7")
+  const [generatingReport, setGeneratingReport] = React.useState(false)
 
   React.useEffect(() => {
     if (filterValue) {
@@ -310,6 +264,66 @@ export function SellsTable() {
     }
   }
 
+  const handleGenerateReport = async () => {
+    if (!reportDate) {
+      alert("Por favor selecciona una fecha para el reporte");
+      return;
+    }
+
+    const business = localStorage.getItem("easyferry-business") || "";
+    const formattedDate = format(reportDate, "yyyy-MM-dd");
+
+    setGeneratingReport(true);
+    try {
+      const response = await fetch("https://easy-ferry.uc.r.appspot.com/marine-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          business: business,
+          time: reportTime,
+          date: formattedDate
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      // Obtener el blob (archivo binario) de la respuesta
+      const blob = await response.blob();
+
+      // Crear un enlace de descarga
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+
+      // Obtener el nombre del archivo del header Content-Disposition o usar uno por defecto
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let fileName = 'reporte.xlsx';
+
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (fileNameMatch && fileNameMatch[1]) {
+          fileName = fileNameMatch[1];
+        }
+      }
+
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      // Liberar el objeto URL
+      window.URL.revokeObjectURL(downloadUrl);
+
+    } catch (error) {
+      console.error("Error al generar el reporte:", error);
+      alert("Hubo un error al generar el reporte");
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -323,6 +337,55 @@ export function SellsTable() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   })
+
+  function Calendar24() {
+    return (
+      <div className="flex gap-4">
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="date-picker" className="px-1">
+            Date
+          </Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                id="date-picker"
+                className="w-32 justify-between font-normal"
+              >
+                {reportDate ? format(reportDate, "yyyy/MM/dd") : "Select date"}
+                <ChevronDown />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={reportDate}
+                captionLayout="dropdown"
+                onSelect={setReportDate}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="time-picker" className="px-1">
+            Time
+          </Label>
+          <Select value={reportTime} onValueChange={setReportTime}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecciona una hora" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Hora</SelectLabel>
+                <SelectItem value="am">AM</SelectItem>
+                <SelectItem value="pm">PM</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full relative">
@@ -478,8 +541,20 @@ export function SellsTable() {
 
           <div className="flex items-end justify-center mt-4">
             <Calendar24 />
-            <Button variant="default" className="ml-4">
-              Generar reporte
+            <Button 
+              variant="default" 
+              className="ml-4"
+              onClick={handleGenerateReport}
+              disabled={generatingReport}
+            >
+              {generatingReport ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="animate-spin h-4 w-4" />
+                  Generando...
+                </span>
+              ) : (
+                "Generar reporte"
+              )}
             </Button>
           </div>
         </>

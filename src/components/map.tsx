@@ -51,10 +51,7 @@ export default function MapWithCustomMarkers() {
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v11',
         center: [points[0].long, points[0].lat],
-        zoom: 12,
-        pitch: 60,
-        bearing: -20,
-        antialias: true
+        zoom: 8
       })
 
       map.on('load', () => {
@@ -105,8 +102,9 @@ export default function MapWithCustomMarkers() {
         'line-cap': 'round'
       },
       paint: {
-        'line-color': '#ff0000',
-        'line-width': 3
+        'line-color': '#ffff00',
+        'line-width': 3,
+        'line-dasharray': [2, 2]
       }
     })
 

@@ -194,8 +194,12 @@ export function SellCard() {
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Roles</SelectLabel>
-                        <SelectItem value="SC-SX">SC-SX</SelectItem>
-                        <SelectItem value="SX-SC">SX-SC</SelectItem>
+                        <SelectItem value="SC-SX">San Cristóbal-Santa Cruz</SelectItem>
+                        <SelectItem value="SX-SC">Santa Cruz-San Cristóbal</SelectItem>
+                        <SelectItem value="SX-IB">Santa Cruz-Isabela</SelectItem>
+                        <SelectItem value="IB-SX">Isabela-Santa Cruz</SelectItem>
+                        <SelectItem value="SX-FL">Santa Cruz-Floreana</SelectItem>
+                        <SelectItem value="FL-SX">Floreana-Santa Cruz</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -298,9 +302,9 @@ export function SellCard() {
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Estados</SelectLabel>
-                        <SelectItem value="pending">Pendiente</SelectItem>
-                        <SelectItem value="confirmed">Confirmado</SelectItem>
-                        <SelectItem value="cancelled">Cancelado</SelectItem>
+                        <SelectItem value="residente">Residente</SelectItem>
+                        <SelectItem value="turista">Turista</SelectItem>
+                        <SelectItem value="transeunte">Transeunte</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
