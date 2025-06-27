@@ -62,7 +62,7 @@ export default function MapWithCustomMarkers() {
     } else {
       // Si el mapa ya existe, actualizar sus características
       updateMapFeatures(mapRef.current)
-      
+
       // Centrar el mapa en el último punto (opcional)
       mapRef.current.flyTo({
         center: [points[0].long, points[0].lat],
@@ -76,7 +76,7 @@ export default function MapWithCustomMarkers() {
     // Eliminar capas y fuentes existentes si existen
     if (map.getLayer('line-layer')) map.removeLayer('line-layer')
     if (map.getSource('line')) map.removeSource('line')
-    
+
     // Eliminar marcadores existentes
     document.querySelectorAll('.mapboxgl-marker').forEach(el => el.remove())
 
@@ -102,7 +102,7 @@ export default function MapWithCustomMarkers() {
         'line-cap': 'round'
       },
       paint: {
-        'line-color': '#ffff00',
+        'line-color': '#ff0000',
         'line-width': 3,
         'line-dasharray': [2, 2]
       }

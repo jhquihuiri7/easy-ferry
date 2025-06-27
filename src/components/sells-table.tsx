@@ -275,7 +275,7 @@ export function SellsTable() {
 
     setGeneratingReport(true);
     try {
-      const response = await fetch("https://easy-ferry.uc.r.appspot.com/marine-report", {
+      const response = await fetch("http://127.0.0.1:8000/marine-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
