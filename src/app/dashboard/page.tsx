@@ -8,13 +8,13 @@ import { Dashboard } from "@/components/dashboard";
 import { SellCard } from "@/components/sell-card";
 import { SellsTable } from "@/components/sells-table";
 import { SellsTableBase } from "@/components/sells-table-base";
-import { toast, Toaster } from "sonner"; // ✅ Importar toast
+import { toast, Toaster } from "sonner";
 
 type VariableType = "opcion1" | "opcion2" | "opcion3" | "opcion4";
 
 const Componente1 = () => <Dashboard />;
 const Componente2 = () => <SellCard />;
-const Componente3 = () => <SellsTable />;
+const Componente3 = () => <SellsTable/>;
 const Componente4 = () => <SellsTableBase />;
 
 const componenteMapa: Record<VariableType, React.FC> = {
@@ -35,75 +35,71 @@ export default function Page() {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
-  const fetchNotifications = async () => {
-    try {
-      const business = localStorage.getItem("easyferry-business");
-      if (!business) {
-        console.error("No business found in localStorage");
-        return;
-      }
+    const fetchNotifications = async () => {
+      try {
+        const business = localStorage.getItem("easyferry-business");
+        if (!business) {
+          console.error("No business found in localStorage");
+          return;
+        }
 
-      const response = await fetch(`https://easy-ferry.uc.r.appspot.com/get-notifications?business=${business}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "text/plain",
-        },
-      });
+        const response = await fetch(`https://easy-ferry.uc.r.appspot.com/get-notifications?business=${business}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+        });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-      const data = await response.json();
-      const notifs = data.notifications;
+        const data = await response.json();
+        const notifs = data.notifications;
 
-      // Filtra notificaciones no leídas (read === false)
-    const unreadNotifs = notifs.filter((notif: { read: boolean }) => !notif.read);
-    console.log(unreadNotifs);
-    // Mostrar cada notificación no leída
-    unreadNotifs.forEach((notif: any) => {
-      toast("Nueva notificación", {
-        description: `${notif.message} (${notif.date})`, 
-        action: {
-          label: "Marcar como leída",
-          onClick: async () => {
-            try {
-              const response = await fetch('https://easy-ferry.uc.r.appspot.com/mark-as-read-notifications', {
-                method: 'POST',
-                headers: {
-              'Content-Type': 'application/json',
-              // Si estás usando autenticación, añade el token aquí
-              // 'Authorization': `Bearer ${yourAuthToken}`
-                },
-                body: JSON.stringify({
-              notification_id: notif.id  // Asegúrate que notif tiene un campo id
-                })
-              });
-            
-              const data = await response.json();
-            
-              if (!response.ok) {
-                throw new Error(data.error || 'Error al marcar como leída');
+        const unreadNotifs = notifs.filter((notif: { read: boolean }) => !notif.read);
+        console.log(unreadNotifs);
+        
+        unreadNotifs.forEach((notif: any) => {
+          toast("Nueva notificación", {
+            description: `${notif.message} (${notif.date})`, 
+            action: {
+              label: "Marcar como leída",
+              onClick: async () => {
+                try {
+                  const response = await fetch('https://easy-ferry.uc.r.appspot.com/mark-as-read-notifications', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      notification_id: notif.id
+                    })
+                  });
+                
+                  const data = await response.json();
+                
+                  if (!response.ok) {
+                    throw new Error(data.error || 'Error al marcar como leída');
+                  }
+                
+                } catch (error) {
+                  console.error('Error:', error);
+                  toast.error("Error al marcar la notificación como leída");
+                }
               }
-            
-            } catch (error) {
-          console.error('Error:', error);
-          toast.error("Error al marcar la notificación como leída");
-            }
-          }
-        },
-      });
-    });
+            },
+          });
+        });
 
-      setNotifications(notifs);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-  };
+        setNotifications(notifs);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
 
-  fetchNotifications();
-}, [router]);
-
+    fetchNotifications();
+  }, [router]);
 
   const opcionesValidas: Record<string, VariableType> = {
     "Panel Principal": "opcion1",
@@ -113,20 +109,29 @@ export default function Page() {
   };
 
   return (
-    <div className="[--header-height:calc(--spacing(14))]">
-      <SidebarProvider className="flex flex-col">
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 14)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" selectedItem={selectedItem} setSelectedItem={setSelectedItem} notifications={notifications} />
+      <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1">
-          <AppSidebar selectedItem={selectedItem} setSelectedItem={setSelectedItem} notifications={notifications}/>
-          <SidebarInset>
-            <div className="flex flex-1 flex-col gap-4 p-4">
-              <h1>{selectedItem}</h1>
-              <MapaComponentes variable={opcionesValidas[selectedItem]} />
-              <Toaster position="top-right" />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <h1 className="px-4 lg:px-6">{selectedItem}</h1>
+              <div className="px-4 lg:px-6 overflow-x-auto">
+                <MapaComponentes variable={opcionesValidas[selectedItem]} />
+              </div>
             </div>
-          </SidebarInset>
+          </div>
         </div>
-      </SidebarProvider>
-    </div>
+        <Toaster position="top-right" />
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
