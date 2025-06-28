@@ -13,7 +13,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Loader2 } from "lucide-react"
+import { ArrowUpDown, ChevronDown, MoreHorizontal, Loader2, Ticket, Edit } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -24,6 +24,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import {
   Table,
@@ -38,18 +47,24 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, addDays, subDays } from "date-fns"
 import { es } from "date-fns/locale"
+import { Label } from "@/components/ui/label"
 
 export type Sale = {
   id: number
-  created_at: string
-  business_id: string
   name: string
   age: number
   route: string
   time: string
   ferry: string
   intermediary: string
-  seller_id: number
+  date: string
+  seller: string
+  passport: string
+  phone: string
+  status: string,
+  notes: string,
+  payed: string,
+  payment: string
 }
 
 export const columns: ColumnDef<Sale>[] = [
@@ -76,69 +91,144 @@ export const columns: ColumnDef<Sale>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id",
-    header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1">
-        ID
-        <ArrowUpDown />
-      </Button>
-    ),
-  },
-  {
     accessorKey: "name",
     header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1">
-        Name
-        <ArrowUpDown />
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Nombre
+        <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("name")}</div>,
   },
   {
     accessorKey: "age",
     header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1">
-        Age
-        <ArrowUpDown />
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Edad
+        <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div className="text-right font-medium">{row.getValue("age")}</div>,
+    cell: ({ row }) => <div className="text-right font-medium whitespace-nowrap">{row.getValue("age")}</div>,
   },
   {
     accessorKey: "route",
     header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1">
-        Route
-        <ArrowUpDown />
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Ruta
+        <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("route")}</div>,
   },
   {
     accessorKey: "time",
     header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1">
-        Time
-        <ArrowUpDown />
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Horario
+        <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("time")}</div>,
   },
   {
     accessorKey: "ferry",
     header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1">
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
         Ferry
-        <ArrowUpDown />
+        <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("ferry")}</div>,
   },
   {
     accessorKey: "intermediary",
     header: ({ column }) => (
-      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1">
-        Intermediary
-        <ArrowUpDown />
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Intermediario
+        <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("intermediary")}</div>,
+  },
+  {
+    accessorKey: "date",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Fecha
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("date")}</div>,
+  },
+  {
+    accessorKey: "seller",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Vendedor
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("seller")}</div>,
+  },
+  {
+    accessorKey: "passport",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Pasaporte
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("passport")}</div>,
+  },
+  {
+    accessorKey: "phone",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Teléfono
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("phone")}</div>,
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Estado
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("status")}</div>,
+  },
+  {
+    accessorKey: "notes",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Notas
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("notes")}</div>,
+  },
+  {
+    accessorKey: "payed",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Pagado
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("payed")}</div>,
+  },
+  {
+    accessorKey: "payment",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Método de pago
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("payment")}</div>,
   },
   {
     id: "actions",
@@ -150,13 +240,18 @@ export const columns: ColumnDef<Sale>[] = [
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(sale.id.toString())}>
+            <DropdownMenuItem>
+              <Edit className="mr-2 h-4 w-4" />
               Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Ticket className="mr-2 h-4 w-4" />
+              Ticket
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -182,6 +277,10 @@ export function SellsTableBase() {
   const [endDate, setEndDate] = React.useState<Date | undefined>(addDays(new Date(), 5))
   const [startCalendarOpen, setStartCalendarOpen] = React.useState(false)
   const [endCalendarOpen, setEndCalendarOpen] = React.useState(false)
+
+  const [reportDate, setReportDate] = React.useState<Date | undefined>(new Date())
+  const [reportTime, setReportTime] = React.useState("7")
+  const [generatingReport, setGeneratingReport] = React.useState(false)
 
   React.useEffect(() => {
     if (filterValue) {
@@ -244,6 +343,60 @@ export function SellsTableBase() {
     }
   }
 
+  const handleGenerateReport = async () => {
+    if (!reportDate) {
+      alert("Por favor selecciona una fecha para el reporte");
+      return;
+    }
+
+    const business = localStorage.getItem("easyferry-business") || "";
+    const formattedDate = format(reportDate, "yyyy-MM-dd");
+
+    setGeneratingReport(true);
+    try {
+      const response = await fetch("http://127.0.0.1:8000/marine-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          business: business,
+          time: reportTime,
+          date: formattedDate
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let fileName = 'reporte.xlsx';
+
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (fileNameMatch && fileNameMatch[1]) {
+          fileName = fileNameMatch[1];
+        }
+      }
+
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+    } catch (error) {
+      console.error("Error al generar el reporte:", error);
+      alert("Hubo un error al generar el reporte");
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -258,14 +411,63 @@ export function SellsTableBase() {
     getFilteredRowModel: getFilteredRowModel(),
   })
 
+  function Calendar24() {
+    return (
+      <div className="flex gap-4">
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="date-picker" className="px-1">
+            Fecha
+          </Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                id="date-picker"
+                className="w-32 justify-between font-normal"
+              >
+                {reportDate ? format(reportDate, "yyyy/MM/dd") : "Seleccionar fecha"}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={reportDate}
+                captionLayout="dropdown"
+                onSelect={setReportDate}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="time-picker" className="px-1">
+            Horario
+          </Label>
+          <Select value={reportTime} onValueChange={setReportTime}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecciona una hora" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Hora</SelectLabel>
+                <SelectItem value="am">AM</SelectItem>
+                <SelectItem value="pm">PM</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="w-full relative">
+    <div className="flex-1 relative overflow-hidden">
       {Object.keys(rowSelection).some((key) => rowSelection[key]) && (
         <div className="absolute top-0 right-0 p-4">
           <Button variant="destructive" onClick={handleDeleteSelected} disabled={deleting}>
             {deleting ? (
               <span className="flex items-center gap-2">
-                <Loader2 className="animate-spin" />
+                <Loader2 className="animate-spin h-4 w-4" />
                 Eliminando...
               </span>
             ) : (
@@ -283,7 +485,7 @@ export function SellsTableBase() {
           <div className="flex items-center justify-between py-4 flex-wrap gap-4">
             <div className="flex items-center gap-4 flex-wrap">
               <Input
-                placeholder={`Filter by ${filterColumn}...`}
+                placeholder={`Filtrar por ${filterColumn}...`}
                 value={filterValue}
                 onChange={(e) => setFilterValue(e.target.value)}
                 className="w-[200px]"
@@ -291,7 +493,7 @@ export function SellsTableBase() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
-                    Filter Column: {filterColumn} <ChevronDown />
+                    Columna: {filterColumn} <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -363,51 +565,102 @@ export function SellsTableBase() {
             </div>
           </div>
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((hg) => (
-                  <TableRow key={hg.id}>
-                    {hg.headers.map((head) => (
-                      <TableHead key={head.id}>
-                        {head.isPlaceholder ? null : flexRender(head.column.columnDef.header, head.getContext())}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id} data-state={row.getIsSelected() ? "selected" : undefined}>
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+          <div className="rounded-md border overflow-hidden">
+            <div className="overflow-x-auto w-full">
+              <Table className="w-full max-w-full table-fixed">
+                <TableHeader className="bg-muted sticky top-0 z-10">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead 
+                          key={header.id} 
+                          colSpan={header.colSpan}
+                          style={{ 
+                            width: header.getSize(),
+                            minWidth: header.column.columnDef.minSize,
+                            maxWidth: (header.column.columnDef.minSize ?? 50) + 100
+                          }}
+                        >
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="truncate">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="h-24 text-center">
+                        No se encontraron resultados
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
           <div className="flex items-center justify-end space-x-2 py-4">
-            <div className="text-muted-foreground flex-1 text-sm">
-              {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
+            <div className="text-muted-foreground flex-1 text-sm whitespace-nowrap">
+              {table.getFilteredSelectedRowModel().rows.length} de {table.getFilteredRowModel().rows.length} fila(s) seleccionadas
             </div>
             <div className="space-x-2">
-              <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} type="button">
-                Previous
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                type="button"
+              >
+                Anterior
               </Button>
-              <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} type="button">
-                Next
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                type="button"
+              >
+                Siguiente
               </Button>
             </div>
+          </div>
+
+          <div className="flex items-end justify-center mt-4">
+            <Calendar24 />
+            <Button 
+              variant="default" 
+              className="ml-4"
+              onClick={handleGenerateReport}
+              disabled={generatingReport}
+            >
+              {generatingReport ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="animate-spin h-4 w-4" />
+                  Generando...
+                </span>
+              ) : (
+                "Generar reporte"
+              )}
+            </Button>
           </div>
         </>
       )}
