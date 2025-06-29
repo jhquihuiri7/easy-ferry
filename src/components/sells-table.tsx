@@ -42,12 +42,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, addDays, subDays } from "date-fns"
 import { es } from "date-fns/locale"
 import { Label } from "@/components/ui/label"
+import { SellCard } from "@/components/sell-card"
 
 export type Sale = {
   id: number
@@ -245,10 +255,20 @@ export const columns: ColumnDef<Sale>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem>
-              <Edit className="mr-2 h-4 w-4" />
-              Editar
-            </DropdownMenuItem>
+            <Dialog>
+              <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Editar venta</DialogTitle>
+                </DialogHeader>
+                <SellCard initialData={sale} isEdit={true}/>
+              </DialogContent>
+            </Dialog>
             <DropdownMenuItem>
               <Ticket className="mr-2 h-4 w-4" />
               Ticket

@@ -28,22 +28,29 @@ import {
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
-export function SellCard() {
+export function SellCard({
+  initialData,
+  isEdit = false, 
+}: {
+  initialData?: any
+  isEdit?: boolean
+}){
   const [open, setOpen] = React.useState(false)
-  const [date, setDate] = React.useState<Date | undefined>(undefined)
-  const [name, setName] = React.useState("")
-  const [age, setAge] = React.useState<number | "">("")
-  const [price, setPrice] = React.useState<number | "">("")
-  const [route, setRoute] = React.useState("")
-  const [time, setTime] = React.useState("")
-  const [ferry, setFerry] = React.useState("")
-  const [intermediary, setIntermediary] = React.useState("")
-  const [business, setBusiness] = React.useState("")
-  const [email, setEmail] = React.useState("")
-  const [notes, setNotes] = React.useState("")
-  const [passport, setPassport] = React.useState("")
-  const [phone, setPhone] = React.useState("")
-  const [status, setStatus] = React.useState("")
+  const [date, setDate] = React.useState<Date | undefined>(
+    initialData?.date ? new Date(initialData.date) : undefined
+  )
+  const [name, setName] = React.useState(initialData?.name ?? "")
+  const [age, setAge] = React.useState<number | "">(initialData?.age ?? "")
+  const [price, setPrice] = React.useState<number | "">(initialData?.price ?? "")
+  const [route, setRoute] = React.useState(initialData?.route ?? "")
+  const [time, setTime] = React.useState(initialData?.time ?? "")
+  const [ferry, setFerry] = React.useState(initialData?.ferry ?? "")
+  const [intermediary, setIntermediary] = React.useState(initialData?.intermediary ?? "")
+  const [notes, setNotes] = React.useState(initialData?.notes ?? "")
+  const [passport, setPassport] = React.useState(initialData?.passport ?? "")
+  const [phone, setPhone] = React.useState(initialData?.phone ?? "")
+  const [status, setStatus] = React.useState(initialData?.status ?? "")
+
   const [isLoading, setIsLoading] = React.useState(false)
 
   const isFormValid = 
@@ -126,7 +133,7 @@ export function SellCard() {
     <div className="flex items-center justify-center overflow-hidden">
       <Card className="w-full max-w-3xl">
         <CardHeader>
-          <CardTitle>Ingresa una nueva venta</CardTitle>
+          <CardTitle>{isEdit ? "" : "Ingresa una nueva venta"}</CardTitle>
           <CardDescription>Proporciona los datos requeridos</CardDescription>
         </CardHeader>
         <CardContent>
@@ -324,7 +331,7 @@ export function SellCard() {
                     Procesando...
                   </>
                 ) : (
-                  "Agregar"
+                  isEdit ? "Guardar" : "Agregar"
                 )}
               </Button>
               {!isFormValid && !isLoading && (
