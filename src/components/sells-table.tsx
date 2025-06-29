@@ -77,7 +77,7 @@ export type Sale = {
   payment: string
 }
 
-export const columns: ColumnDef<Sale>[] = [
+export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -245,6 +245,8 @@ export const columns: ColumnDef<Sale>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const sale = row.original
+      const [isDialogOpen, setIsDialogOpen] = React.useState(false)
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -255,7 +257,7 @@ export const columns: ColumnDef<Sale>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                   <Edit className="mr-2 h-4 w-4" />
@@ -266,7 +268,14 @@ export const columns: ColumnDef<Sale>[] = [
                 <DialogHeader>
                   <DialogTitle>Editar venta</DialogTitle>
                 </DialogHeader>
-                <SellCard initialData={sale} isEdit={true}/>
+                <SellCard 
+                  initialData={sale} 
+                  isEdit={true}
+                  onSuccess={() => {
+                    setIsDialogOpen(false)
+                    refetch() // ✅ Refrescar la tabla
+                  }}
+                />
               </DialogContent>
             </Dialog>
             <DropdownMenuItem>
@@ -419,7 +428,7 @@ export function SellsTable() {
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columns(fetchSales),
     state: { sorting, columnFilters, columnVisibility, rowSelection },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

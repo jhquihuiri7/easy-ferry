@@ -30,11 +30,13 @@ import { toast } from "sonner"
 
 export function SellCard({
   initialData,
-  isEdit = false, 
+  isEdit = false,
+  onSuccess, // NUEVO: Callback para cerrar el diálogo
 }: {
   initialData?: any
   isEdit?: boolean
-}){
+  onSuccess?: () => void
+}) {
   const [open, setOpen] = React.useState(false)
   const [date, setDate] = React.useState<Date | undefined>(
     initialData?.date ? new Date(initialData.date) : undefined
@@ -50,25 +52,25 @@ export function SellCard({
   const [passport, setPassport] = React.useState(initialData?.passport ?? "")
   const [phone, setPhone] = React.useState(initialData?.phone ?? "")
   const [status, setStatus] = React.useState(initialData?.status ?? "")
-
   const [isLoading, setIsLoading] = React.useState(false)
 
-  const isFormValid = 
-    name.trim() !== '' && 
-    date !== undefined && 
-    route !== '' && 
-    time !== '' && 
-    price !== '' && 
-    ferry !== '';
+  const isFormValid =
+    name.trim() !== '' &&
+    date !== undefined &&
+    route !== '' &&
+    time !== '' &&
+    price !== '' &&
+    ferry !== ''
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
+
     const business = localStorage.getItem("easyferry-business") || ""
     const email = localStorage.getItem("easyferry-email") || ""
 
     const data = {
+      ...(isEdit && initialData?.id && { id: initialData.id }),
       business: business,
       name,
       age: age === "" ? 0 : age,
@@ -87,7 +89,7 @@ export function SellCard({
 
     try {
       const response = await fetch("https://easy-ferry.uc.r.appspot.com/sales", {
-        method: "PUT",
+        method: isEdit ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -95,34 +97,37 @@ export function SellCard({
       })
 
       if (response.ok) {
-        toast.success("Reserva agregada con éxito", {
-          description: "La reserva ha sido registrada correctamente.",
+        toast.success(`Reserva ${isEdit ? 'actualizada' : 'agregada'} con éxito`, {
+          description: `La reserva ha sido ${isEdit ? 'actualizada' : 'registrada'} correctamente.`,
         })
-
-        setName("")
-        setAge("")
-        setPrice("")
-        setRoute("")
-        setTime("")
-        setFerry("")
-        setIntermediary("")
-        setDate(undefined)
-        setNotes("")
-        setPassport("")
-        setPhone("")
-        setStatus("")
+        if (onSuccess) {
+          onSuccess() // cerrar diálogo desde el padre
+        }
+        if (!isEdit) {
+          setName("")
+          setAge("")
+          setPrice("")
+          setRoute("")
+          setTime("")
+          setFerry("")
+          setIntermediary("")
+          setDate(undefined)
+          setNotes("")
+          setPassport("")
+          setPhone("")
+          setStatus("")
+        }
       } else {
         const errorData = await response.json().catch(() => ({}))
-        const errorMessage = errorData.message || "Ocurrió un error al intentar registrar la reserva."
-        
-        toast.error("Error al registrar la reserva", {
+        const errorMessage = errorData.message || "Ocurrió un error al procesar la reserva."
+        toast.error(`Error al ${isEdit ? 'actualizar' : 'crear'} la reserva`, {
           description: `Código ${response.status}: ${errorMessage}`,
         })
       }
     } catch (err) {
       console.error(err)
       toast.error("Error de conexión", {
-        description: "La reserva no pudo ser ingresada por problemas de conexión. Por favor intenta nuevamente.",
+        description: `No se pudo ${isEdit ? 'actualizar' : 'crear'} la reserva por problemas de conexión.`,
       })
     } finally {
       setIsLoading(false)
@@ -133,8 +138,10 @@ export function SellCard({
     <div className="flex items-center justify-center overflow-hidden">
       <Card className="w-full max-w-3xl">
         <CardHeader>
-          <CardTitle>{isEdit ? "" : "Ingresa una nueva venta"}</CardTitle>
-          <CardDescription>Proporciona los datos requeridos</CardDescription>
+          <CardTitle>{isEdit ? "Editar reserva" : "Nueva venta"}</CardTitle>
+          <CardDescription>
+            {isEdit ? "Modifica los datos necesarios" : "Completa todos los campos requeridos"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>
@@ -142,38 +149,27 @@ export function SellCard({
               {/* Fila 1 */}
               <div className="flex gap-4">
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="name">Nombre</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Nombre"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
+                  <Label htmlFor="name">Nombre completo*</Label>
+                  <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="date">Fecha</Label>
+                  <Label htmlFor="date">Fecha de viaje*</Label>
                   <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        id="date"
-                        className="w-full justify-between font-normal"
-                      >
+                      <Button variant="outline" id="date" className="w-full justify-between font-normal">
                         {date ? date.toLocaleDateString() : "Selecciona una fecha"}
                         <ChevronDownIcon className="ml-2 h-4 w-4" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto overflow-hidden p-0 z-50 absolute" align="center">
+                    <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
                         selected={date}
-                        captionLayout="dropdown"
                         onSelect={(date) => {
                           setDate(date)
                           setOpen(false)
                         }}
+                        initialFocus
                       />
                     </PopoverContent>
                   </Popover>
@@ -183,9 +179,9 @@ export function SellCard({
                   <Input
                     id="age"
                     type="number"
-                    placeholder="Edad"
                     value={age}
                     onChange={(e) => setAge(e.target.value === "" ? "" : Number(e.target.value))}
+                    min="0"
                   />
                 </div>
               </div>
@@ -193,48 +189,45 @@ export function SellCard({
               {/* Fila 2 */}
               <div className="flex gap-4">
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="route">Ruta</Label>
+                  <Label htmlFor="route">Ruta*</Label>
                   <Select value={route} onValueChange={setRoute} required>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecciona una ruta" />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona una ruta" /></SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>Roles</SelectLabel>
-                        <SelectItem value="SC-SX">San Cristóbal-Santa Cruz</SelectItem>
-                        <SelectItem value="SX-SC">Santa Cruz-San Cristóbal</SelectItem>
-                        <SelectItem value="SX-IB">Santa Cruz-Isabela</SelectItem>
-                        <SelectItem value="IB-SX">Isabela-Santa Cruz</SelectItem>
-                        <SelectItem value="SX-FL">Santa Cruz-Floreana</SelectItem>
-                        <SelectItem value="FL-SX">Floreana-Santa Cruz</SelectItem>
+                        <SelectLabel>Rutas disponibles</SelectLabel>
+                        <SelectItem value="SC-SX">San Cristóbal → Santa Cruz</SelectItem>
+                        <SelectItem value="SX-SC">Santa Cruz → San Cristóbal</SelectItem>
+                        <SelectItem value="SX-IB">Santa Cruz → Isabela</SelectItem>
+                        <SelectItem value="IB-SX">Isabela → Santa Cruz</SelectItem>
+                        <SelectItem value="SX-FL">Santa Cruz → Floreana</SelectItem>
+                        <SelectItem value="FL-SX">Floreana → Santa Cruz</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="time">Hora</Label>
+                  <Label htmlFor="time">Horario*</Label>
                   <Select value={time} onValueChange={setTime} required>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecciona un horario" />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona un horario" /></SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Horarios</SelectLabel>
-                        <SelectItem value="am">AM</SelectItem>
-                        <SelectItem value="pm">PM</SelectItem>
+                        <SelectItem value="am">Mañana (AM)</SelectItem>
+                        <SelectItem value="pm">Tarde (PM)</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="price">Precio ($)</Label>
+                  <Label htmlFor="price">Precio ($)*</Label>
                   <Input
                     id="price"
                     type="number"
-                    placeholder="Precio"
                     value={price}
                     onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))}
                     required
+                    min="0"
+                    step="0.01"
                   />
                 </div>
               </div>
@@ -242,73 +235,46 @@ export function SellCard({
               {/* Fila 3 */}
               <div className="flex gap-4">
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="ferry">Lancha</Label>
+                  <Label htmlFor="ferry">Lancha*</Label>
                   <Select value={ferry} onValueChange={setFerry} required>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecciona una lancha" />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona una lancha" /></SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>Lanchas</SelectLabel>
+                        <SelectLabel>Embarcaciones</SelectLabel>
                         <SelectItem value="Gaviota">Gaviota</SelectItem>
                         <SelectItem value="Arrecife">Arrecife</SelectItem>
+                        <SelectItem value="Otra">Otra embarcación</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="intermediary">Referencia</Label>
-                  <Input
-                    id="intermediary"
-                    type="text"
-                    placeholder="Opcional"
-                    value={intermediary}
-                    onChange={(e) => setIntermediary(e.target.value)}
-                  />
+                  <Label htmlFor="intermediary">Referencia/Intermediario</Label>
+                  <Input id="intermediary" type="text" value={intermediary} onChange={(e) => setIntermediary(e.target.value)} />
                 </div>
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="notes">Notas</Label>
-                  <Input
-                    id="notes"
-                    type="text"
-                    placeholder="Notas adicionales"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                  />
+                  <Label htmlFor="notes">Notas adicionales</Label>
+                  <Input id="notes" type="text" value={notes} onChange={(e) => setNotes(e.target.value)} />
                 </div>
               </div>
 
-              {/* Fila 4 - Nueva fila agregada */}
+              {/* Fila 4 */}
               <div className="flex gap-4">
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="passport">Pasaporte</Label>
-                  <Input
-                    id="passport"
-                    type="text"
-                    placeholder="Número de pasaporte"
-                    value={passport}
-                    onChange={(e) => setPassport(e.target.value)}
-                  />
+                  <Label htmlFor="passport">Pasaporte/ID</Label>
+                  <Input id="passport" type="text" value={passport} onChange={(e) => setPassport(e.target.value)} />
                 </div>
                 <div className="flex-1 grid gap-2">
                   <Label htmlFor="phone">Teléfono</Label>
-                  <Input
-                    id="phone"
-                    type="text"
-                    placeholder="Número de teléfono"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                  />
+                  <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
                 <div className="flex-1 grid gap-2">
-                  <Label htmlFor="status">Estado</Label>
+                  <Label htmlFor="status">Tipo de pasajero</Label>
                   <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecciona un estado" />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona un tipo" /></SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>Estados</SelectLabel>
+                        <SelectLabel>Categorías</SelectLabel>
                         <SelectItem value="residente">Residente</SelectItem>
                         <SelectItem value="turista">Turista</SelectItem>
                         <SelectItem value="transeunte">Transeunte</SelectItem>
@@ -318,26 +284,24 @@ export function SellCard({
                 </div>
               </div>
             </div>
-            <div className="mt-6 relative">
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={isLoading || !isFormValid}
-                variant={!isFormValid && !isLoading ? "outline" : "default"}
-              >
+
+            <div className="mt-8">
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading || !isFormValid}>
                 {isLoading ? (
                   <>
-                    <Loader2 className="animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Procesando...
                   </>
+                ) : isEdit ? (
+                  "Guardar cambios"
                 ) : (
-                  isEdit ? "Guardar" : "Agregar"
+                  "Registrar venta"
                 )}
               </Button>
               {!isFormValid && !isLoading && (
-                <div className="absolute -bottom-6 left-0 text-xs text-muted-foreground">
-                  Complete todos los campos requeridos
-                </div>
+                <p className="mt-2 text-sm text-muted-foreground text-center">
+                  * Completa todos los campos obligatorios
+                </p>
               )}
             </div>
           </form>
