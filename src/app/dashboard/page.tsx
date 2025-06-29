@@ -105,7 +105,7 @@ export default function Page() {
     "Panel Principal": "opcion1",
     "Ventas": "opcion2",
     "Reportes": "opcion3",
-    "Base": "opcion4",
+    "Otros": "opcion4",
   };
 
   return (
