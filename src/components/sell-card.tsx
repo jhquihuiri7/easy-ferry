@@ -31,7 +31,7 @@ import { toast } from "sonner"
 export function SellCard({
   initialData,
   isEdit = false,
-  onSuccess, // NUEVO: Callback para cerrar el diálogo
+  onSuccess,
 }: {
   initialData?: any
   isEdit?: boolean
@@ -52,6 +52,8 @@ export function SellCard({
   const [passport, setPassport] = React.useState(initialData?.passport ?? "")
   const [phone, setPhone] = React.useState(initialData?.phone ?? "")
   const [status, setStatus] = React.useState(initialData?.status ?? "")
+  const [payed, setPayed] = React.useState(initialData?.payed ?? true)
+  const [payment, setPayment] = React.useState(initialData?.payment ?? "efectivo")
   const [isLoading, setIsLoading] = React.useState(false)
 
   const isFormValid =
@@ -84,7 +86,9 @@ export function SellCard({
       notes,
       passport,
       phone,
-      status
+      status,
+      payed,
+      payment
     }
 
     try {
@@ -101,7 +105,7 @@ export function SellCard({
           description: `La reserva ha sido ${isEdit ? 'actualizada' : 'registrada'} correctamente.`,
         })
         if (onSuccess) {
-          onSuccess() // cerrar diálogo desde el padre
+          onSuccess()
         }
         if (!isEdit) {
           setName("")
@@ -116,6 +120,8 @@ export function SellCard({
           setPassport("")
           setPhone("")
           setStatus("")
+          setPayed(true)
+          setPayment("efectivo")
         }
       } else {
         const errorData = await response.json().catch(() => ({}))
@@ -281,6 +287,44 @@ export function SellCard({
                       </SelectGroup>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              {/* Fila 5 - Nuevos campos */}
+              <div className="flex gap-4">
+                <div className="flex-1 grid gap-2">
+                  <Label htmlFor="payed">¿Pagado?</Label>
+                  <Select 
+                    value={payed ? "si" : "no"} 
+                    onValueChange={(value) => setPayed(value === "si")}
+                  >
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona una opción" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Estado de pago</SelectLabel>
+                        <SelectItem value="si">Sí</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 grid gap-2">
+                  <Label htmlFor="payment">Método de pago</Label>
+                  <Select value={payment} onValueChange={setPayment}>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona un método" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Métodos de pago</SelectLabel>
+                        <SelectItem value="efectivo">Efectivo</SelectItem>
+                        <SelectItem value="transferencia">Transferencia</SelectItem>
+                        <SelectItem value="tarjeta">Tarjeta</SelectItem>
+                        <SelectItem value="otro">Otro</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 grid gap-2">
+                  {/* Espacio vacío para mantener el diseño */}
                 </div>
               </div>
             </div>
