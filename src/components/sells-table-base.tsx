@@ -42,12 +42,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, addDays, subDays } from "date-fns"
 import { es } from "date-fns/locale"
 import { Label } from "@/components/ui/label"
+import { SellCard } from "@/components/sell-card"
 
 export type Sale = {
   id: number
@@ -67,7 +77,7 @@ export type Sale = {
   payment: string
 }
 
-export const columns: ColumnDef<Sale>[] = [
+export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -235,6 +245,8 @@ export const columns: ColumnDef<Sale>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const sale = row.original
+      const [isDialogOpen, setIsDialogOpen] = React.useState(false)
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -245,10 +257,27 @@ export const columns: ColumnDef<Sale>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem>
-              <Edit className="mr-2 h-4 w-4" />
-              Editar
-            </DropdownMenuItem>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Editar venta</DialogTitle>
+                </DialogHeader>
+                <SellCard 
+                  initialData={sale} 
+                  isEdit={true}
+                  onSuccess={() => {
+                    setIsDialogOpen(false)
+                    refetch() // ✅ Refrescar la tabla
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
             <DropdownMenuItem>
               <Ticket className="mr-2 h-4 w-4" />
               Ticket
@@ -354,7 +383,7 @@ export function SellsTableBase() {
 
     setGeneratingReport(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/marine-report", {
+      const response = await fetch("https://easy-ferry.uc.r.appspot.com/marine-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -399,7 +428,7 @@ export function SellsTableBase() {
 
   const table = useReactTable({
     data,
-    columns,
+    columns: columns(fetchSales),
     state: { sorting, columnFilters, columnVisibility, rowSelection },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -642,25 +671,6 @@ export function SellsTableBase() {
                 Siguiente
               </Button>
             </div>
-          </div>
-
-          <div className="flex items-end justify-center mt-4">
-            <Calendar24 />
-            <Button 
-              variant="default" 
-              className="ml-4"
-              onClick={handleGenerateReport}
-              disabled={generatingReport}
-            >
-              {generatingReport ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="animate-spin h-4 w-4" />
-                  Generando...
-                </span>
-              ) : (
-                "Generar reporte"
-              )}
-            </Button>
           </div>
         </>
       )}
