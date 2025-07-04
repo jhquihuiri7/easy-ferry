@@ -2,12 +2,10 @@
 
 import {
   BadgeCheck,
-  Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,
 } from "lucide-react"
-import { toast, Toaster } from "sonner"
 
 import {
   Avatar,
@@ -32,11 +30,7 @@ import {
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
-interface NavUserProps {
-  notifications: any[]
-}
-
-export function NavUser({ notifications }: NavUserProps) {
+export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter()
 
@@ -58,22 +52,6 @@ export function NavUser({ notifications }: NavUserProps) {
     localStorage.removeItem("easyferry-name")
     localStorage.removeItem("easyferry-business")
     router.push("/")
-  }
-
-  const handleShowNotifications = () => {
-    if (notifications.length === 0) {
-      return
-    }
-
-    notifications.forEach((notif, index) => {
-      toast(`Notificación ${index + 1}`, {
-        description: `${notif.message} (${notif.date})`,
-        action: {
-          label: "Cerrar",
-          onClick: () => console.log("Notificación cerrada"),
-        },
-      })
-    })
   }
 
   return (
@@ -132,15 +110,6 @@ export function NavUser({ notifications }: NavUserProps) {
               <DropdownMenuItem>
                 <CreditCard />
                 Pagos
-              </DropdownMenuItem>
-              <DropdownMenuItem className="relative" onClick={handleShowNotifications}>
-                <Bell />
-                Notificaciones
-                {notifications.length > 0 && (
-                  <span className="absolute right-2 top-2 inline-flex items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-semibold text-white">
-                    {notifications.length}
-                  </span>
-                )}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

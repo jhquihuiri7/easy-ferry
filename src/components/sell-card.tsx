@@ -238,8 +238,8 @@ export function SellCard({
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Horarios</SelectLabel>
-                        <SelectItem value="am">Mañana (AM)</SelectItem>
-                        <SelectItem value="pm">Tarde (PM)</SelectItem>
+                        <SelectItem value="am">Mañana (am)</SelectItem>
+                        <SelectItem value="pm">Tarde (pm)</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>

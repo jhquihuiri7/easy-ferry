@@ -40,6 +40,7 @@ export function AppSidebar({ selectedItem, setSelectedItem, notifications, ...pr
   return (
     <Sidebar
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
+      
       {...props}
     >
       <SidebarHeader>
@@ -63,7 +64,7 @@ export function AppSidebar({ selectedItem, setSelectedItem, notifications, ...pr
         <NavMain items={navMain} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser notifications={notifications} /> {/* ✅ Se pasan aquí */}
+        <NavUser/>
       </SidebarFooter>
     </Sidebar>
   );

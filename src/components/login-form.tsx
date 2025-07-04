@@ -105,10 +105,10 @@ export function LoginForm({
           </form>
           <div className="bg-muted relative hidden md:block">
             <Image
-              src="/login_bg.png"
+              src="/login_bg.jpg"
               alt="Image"
               fill
-              className="object-cover object-right dark:brightness-[0.2] dark:grayscale"
+              className="object-cover object-center dark:brightness-[0.2] dark:grayscale"
               sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
