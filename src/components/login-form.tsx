@@ -53,9 +53,9 @@ export function LoginForm({
 
   return (
     <div className={cn("flex justify-center w-full", className)} {...props}>
-      <Card className="w-[80vw] max-w-[80vw] min-w-[80vw] p-0 overflow-hidden">
-        <CardContent className="grid p-0 md:grid-cols-[35%_65%] w-full">
-          <form className="p-6 md:p-8 w-full" onSubmit={handleLogin}>
+      <Card className="w-[80vw] max-w-[80vw] min-w-[80vw] h-[80vh] p-0 overflow-hidden">
+        <CardContent className="grid p-0 md:grid-cols-[40%_60%] w-full h-full">
+          <form className="p-6 md:p-8 w-full h-full flex flex-col justify-center" onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
                 <h1 className="text-2xl font-bold">Bienvenido a Easy Ferry</h1>
@@ -97,7 +97,7 @@ export function LoginForm({
               alt="Image"
               fill
               className="object-cover object-center dark:brightness-[0.2] dark:grayscale"
-              sizes="(max-width: 768px) 100vw, 60vw"
+              sizes="(max-width: 768px) 100vw, 70vw"
               priority
             />
           </div>
