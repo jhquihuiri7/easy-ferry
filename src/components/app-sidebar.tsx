@@ -1,9 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  Ship,
-} from "lucide-react"
+import { Ship } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -18,29 +16,35 @@ import {
 } from "@/components/ui/sidebar"
 
 import { NavMenuManager, Menu } from "@/constants/menu"
+import { NavUserManager, UserMenu } from "@/constants/user"
+import { NavSecondary } from "@/components/nav-secondary"
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  selectedItem: string;
-  setSelectedItem: (item: string) => void;
-  notifications: any[]; // ✅ Agregado
+  selectedItem: string
+  setSelectedItem: (item: string) => void
+  notifications?: any[]
 }
 
 export function AppSidebar({ selectedItem, setSelectedItem, notifications, ...props }: AppSidebarProps) {
-  const [email, setEmail] = React.useState<string | null>(null);
-  const [navMain, setNavMain] = React.useState<Menu[]>([]);
+  const [email, setEmail] = React.useState<string | null>(null)
+  const [navMain, setNavMain] = React.useState<Menu[]>([])
+  const [navUser, setNavUser] = React.useState<UserMenu[]>([])
   const [business, setBusiness] = React.useState("")
 
   React.useEffect(() => {
-    const menuManager = new NavMenuManager("owner");
-    setNavMain(menuManager.getNavMenu());
-    const business = localStorage.getItem("easyferry-business") || "";
-    setBusiness(business);
-  }, []);
+    const menuManager = new NavMenuManager("owner")
+    setNavMain(menuManager.getNavMenu())
+    
+    const userManager = new NavUserManager("owner") // Ajusta el rol según sea necesario
+    setNavUser(userManager.getNavUser())
+    
+    const business = localStorage.getItem("easyferry-business") || ""
+    setBusiness(business)
+  }, [])
 
   return (
     <Sidebar
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
-      
       {...props}
     >
       <SidebarHeader>
@@ -61,11 +65,20 @@ export function AppSidebar({ selectedItem, setSelectedItem, notifications, ...pr
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMain} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+        <NavMain 
+          items={navMain} 
+          selectedItem={selectedItem} 
+          setSelectedItem={setSelectedItem} 
+        />
+        <NavSecondary 
+          items={navUser} 
+          selectedItem={selectedItem} 
+          setSelectedItem={setSelectedItem} 
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser/>
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

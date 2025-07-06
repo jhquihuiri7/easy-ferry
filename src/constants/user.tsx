@@ -1,25 +1,56 @@
-export type UserData = {
-    id:string;
-    email: string;
-    restaurant_id: string;
-    last_name: string;
-    first_name: string;
-    role: string;
-    password:string;
-};
+import { SquareTerminal, Bot, BookOpen } from "lucide-react";
 
-export class User {
-    private data: UserData;
+interface UserMenuItem {
+  title: string;
+  url: string;
+  show?: boolean;
+}
 
-    constructor(userData: UserData) {
-        this.data = userData;
-    }
+export interface UserMenu {
+  title: string;
+  url: string;
+  icon: React.ComponentType;
+  isActive?: boolean;
+  items?: UserMenuItem[];
+}
 
-    static createNewUser(data: UserData): User {
-        return new User(data);
-    }
+export class NavUserManager {
+  private role: string;
+  private navUser: UserMenu[];
+  private validUserRolesMap: Record<string, string[]>;
 
-    getUserData(): UserData {
-        return this.data;
-    }
+  constructor(role: string) {
+    this.role = role;
+    this.navUser = [
+      {
+        title: "Dashboard Usuario",
+        url: "#",
+        icon: BookOpen,
+        isActive: true,
+        items: [
+          { title: "Cuenta", url: "/cuenta" },
+          { title: "Pagos", url: "/pagos" }
+        ],
+      }
+    ];
+    this.validUserRolesMap = {
+      "Cuenta": ["owner", "admin"],
+      "Pagos": ["owner", "admin"]
+    };
+    this.updateUserShowStatus();
+  }
+
+  private updateUserShowStatus(): void {
+    this.navUser.forEach(menu => {
+      if (menu.items) {
+        menu.items.forEach(item => {
+          item.show = this.validUserRolesMap[item.title]?.includes(this.role) || false;
+        });
+      }
+    });
+  }
+
+  getNavUser(): UserMenu[] {
+    return this.navUser;
+  }
 }
