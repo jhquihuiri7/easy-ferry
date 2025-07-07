@@ -12,7 +12,7 @@ import { toast, Toaster } from "sonner";
 import { Pagos } from "@/components/pagos";
 import { Cuenta } from "@/components/cuenta";
 
-type VariableType = "opcion1" | "opcion2" | "opcion3" | "opcion4" | "opcion5" | "opcion6" ;
+type VariableType = "opcion1" | "opcion2" | "opcion3" | "opcion4" | "opcion5" | "opcion6";
 
 const Componente1 = () => <Dashboard />;
 const Componente2 = () => <SellCard />;
@@ -41,6 +41,48 @@ export default function Page() {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
+    const refreshToken = async () => {
+      try {
+        const token = localStorage.getItem("easyferry-token");
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+
+        const response = await fetch('https://easy-ferry.uc.r.appspot.com/refresh', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: token
+          })
+        });
+
+        if (!response.ok) {
+          // Limpiar localStorage y redirigir a login
+          localStorage.removeItem("easyferry-token");
+          localStorage.removeItem("easyferry-business");
+          router.push('/login');
+          return;
+        }
+
+        const data = await response.json();
+        console.log("Token refreshed successfully", data);
+        
+        // Si el backend devuelve un nuevo token, lo guardamos
+        if (data.token) {
+          localStorage.setItem("easyferry-token", data.token);
+        }
+
+      } catch (error) {
+        console.error("Error refreshing token:", error);
+        localStorage.removeItem("easyferry-token");
+        localStorage.removeItem("easyferry-business");
+        router.push('/login');
+      }
+    };
+
     const fetchNotifications = async () => {
       try {
         const business = localStorage.getItem("easyferry-business");
@@ -104,7 +146,11 @@ export default function Page() {
       }
     };
 
-    fetchNotifications();
+    // Ejecutamos ambas funciones al cargar la página
+    refreshToken().then(() => {
+      // Solo cargamos notificaciones si el token es válido
+      fetchNotifications();
+    });
   }, [router]);
 
   const opcionesValidas: Record<string, VariableType> = {

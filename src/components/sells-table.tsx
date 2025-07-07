@@ -404,12 +404,21 @@ export function SellsTable() {
 
       const contentDisposition = response.headers.get('Content-Disposition');
       let fileName = 'reporte.xlsx';
-
+      console.log(  )
       if (contentDisposition) {
-        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        const fileNameMatch = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/i);
         if (fileNameMatch && fileNameMatch[1]) {
-          fileName = fileNameMatch[1];
+          fileName = fileNameMatch[1]
+            .replace(/^["']|["']$/g, '')
+            .trim()
+            .replace(/_$/, ''); 
+        } else {
+          // Si no se puede extraer el nombre del archivo del Content-Disposition
+          throw new Error("No se pudo determinar el nombre del archivo desde el servidor");
         }
+      } else {
+        // Si no hay header Content-Disposition
+        throw new Error("El servidor no proporcionó información del nombre del archivo");
       }
 
       link.setAttribute('download', fileName);
@@ -419,8 +428,13 @@ export function SellsTable() {
       window.URL.revokeObjectURL(downloadUrl);
 
     } catch (error) {
-      console.error("Error al generar el reporte:", error);
-      alert("Hubo un error al generar el reporte");
+      let errorMessage = "Hubo un error al generar el reporte";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      alert(errorMessage);
     } finally {
       setGeneratingReport(false);
     }
