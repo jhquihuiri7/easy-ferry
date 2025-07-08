@@ -35,7 +35,7 @@ export function AppSidebar({ selectedItem, setSelectedItem, notifications, ...pr
     const menuManager = new NavMenuManager("owner")
     setNavMain(menuManager.getNavMenu())
     
-    const userManager = new NavUserManager("owner") // Ajusta el rol según sea necesario
+    const userManager = new NavUserManager("owner")
     setNavUser(userManager.getNavUser())
     
     const business = localStorage.getItem("easyferry-business") || ""
@@ -44,18 +44,18 @@ export function AppSidebar({ selectedItem, setSelectedItem, notifications, ...pr
 
   return (
     <Sidebar
-      className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
+      className="h-[calc(100svh-var(--header-height))]! flex flex-col"
       {...props}
     >
-      <SidebarHeader>
+      <SidebarHeader className="flex-none">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <a href="#" className="flex items-center gap-3">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Ship className="size-4" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid text-left text-sm leading-tight">
                   <span className="truncate font-medium">{business}</span>
                   <span className="truncate text-xs">Agencia de Ferry</span>
                 </div>
@@ -64,7 +64,8 @@ export function AppSidebar({ selectedItem, setSelectedItem, notifications, ...pr
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      
+      <SidebarContent className="flex-1 overflow-y-auto">
         <NavMain 
           items={navMain} 
           selectedItem={selectedItem} 
@@ -76,7 +77,8 @@ export function AppSidebar({ selectedItem, setSelectedItem, notifications, ...pr
           setSelectedItem={setSelectedItem} 
         />
       </SidebarContent>
-      <SidebarFooter>
+      
+      <SidebarFooter className="flex-none">
         <NavUser/>
       </SidebarFooter>
     </Sidebar>

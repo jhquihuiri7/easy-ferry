@@ -163,14 +163,7 @@ export default function Page() {
   };
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 14)",
-        } as React.CSSProperties
-      }
-    >
+    <SidebarProvider>
       <AppSidebar variant="inset" selectedItem={selectedItem} setSelectedItem={setSelectedItem} notifications={notifications} />
       <SidebarInset>
         <SiteHeader notifications={notifications}/>
