@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 export function Cuenta() {
   const [name, setName] = useState("")
@@ -39,10 +40,12 @@ export function Cuenta() {
   // Get business from localStorage and fetch owner data
   useEffect(() => {
     const fetchData = async () => {
-      // Get business from localStorage
       const storedBusiness = localStorage.getItem("easyferry-business")
       if (!storedBusiness) {
         setError("No se encontró el negocio en localStorage")
+        toast.error("Error de configuración", {
+          description: "No se encontró el negocio en localStorage",
+        })
         return
       }
       
@@ -51,7 +54,6 @@ export function Cuenta() {
       setError(null)
       
       try {
-        // Fetch both owner and crew data in parallel
         const [ownerResponse, crewResponse] = await Promise.all([
           fetch(`https://easy-ferry.uc.r.appspot.com/get-owner?business=${encodeURIComponent(storedBusiness)}`),
           fetch(`https://easy-ferry.uc.r.appspot.com/get-crew?business=${encodeURIComponent(storedBusiness)}`, {
@@ -93,7 +95,11 @@ export function Cuenta() {
         setFerryRegistration(crewData.ferry_registration || "")
         
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido')
+        const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+        toast.error("Error al cargar datos", {
+          description: `No se pudieron cargar los datos: ${errorMessage}`,
+        })
+        setError(errorMessage)
         console.error('Error:', err)
       } finally {
         setIsLoading(false)
@@ -105,7 +111,9 @@ export function Cuenta() {
 
   const guardarPrimeraCard = async () => {
     if (!business) {
-      setError("No se ha identificado el negocio")
+      toast.error("Error de negocio", {
+        description: "No se ha identificado el negocio",
+      })
       return
     }
 
@@ -132,9 +140,16 @@ export function Cuenta() {
       }
 
       const data = await response.json()
+      toast.success("Datos personales actualizados", {
+        description: "La información personal se guardó correctamente",
+      })
       console.log('Datos del propietario guardados:', data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      toast.error("Error al guardar", {
+        description: `No se pudieron guardar los datos personales: ${errorMessage}`,
+      })
+      setError(errorMessage)
       console.error('Error:', err)
     } finally {
       setIsSavingOwner(false)
@@ -143,7 +158,9 @@ export function Cuenta() {
 
   const guardarSegundaCard = async () => {
     if (!business) {
-      setError("No se ha identificado el negocio")
+      toast.error("Error de negocio", {
+        description: "No se ha identificado el negocio",
+      })
       return
     }
 
@@ -179,9 +196,16 @@ export function Cuenta() {
       }
 
       const data = await response.json()
+      toast.success("Datos del barco actualizados", {
+        description: "La información de la embarcación se guardó correctamente",
+      })
       console.log('Datos del barco guardados:', data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      toast.error("Error al guardar", {
+        description: `No se pudieron guardar los datos del barco: ${errorMessage}`,
+      })
+      setError(errorMessage)
       console.error('Error:', err)
     } finally {
       setIsSavingCrew(false)
