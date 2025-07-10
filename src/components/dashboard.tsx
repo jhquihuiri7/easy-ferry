@@ -1,6 +1,5 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import * as React from 'react'
 import { Area, AreaChart, CartesianGrid, XAxis, ResponsiveContainer } from 'recharts'
 import {
@@ -24,12 +23,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-import 'mapbox-gl/dist/mapbox-gl.css'
-
-const MapWithMarkers = dynamic(() => import('@/components/map'), {
-  ssr: false,
-})
-
 const chartConfig = {
   views: {
     label: 'Ventas',
@@ -44,6 +37,8 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
+type TimeRange = "7d" | "15d" | "30d"
+
 export function Dashboard() {
   const [chartData, setChartData] = React.useState<any[]>([])
   const [summaryValues, setSummaryValues] = React.useState([
@@ -51,21 +46,36 @@ export function Dashboard() {
     { period: { label: 'No pagados', value: 0 } },
   ])
   const [loading, setLoading] = React.useState(true)
-  const [timeRange, setTimeRange] = React.useState("30d")
+  const [timeRange, setTimeRange] = React.useState<TimeRange>("30d")
+
+  // Manejador para el cambio de rango de tiempo
+  const handleTimeRangeChange = (value: string) => {
+    if (value === "7d" || value === "15d" || value === "30d") {
+      setTimeRange(value)
+    }
+  }
 
   React.useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
         const now = new Date()
-        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
-        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+        const startDate = new Date(now)
+        
+        // Ajustamos la fecha de inicio según el rango seleccionado
+        if (timeRange === "7d") {
+          startDate.setDate(startDate.getDate() - 7)
+        } else if (timeRange === "15d") {
+          startDate.setDate(startDate.getDate() - 15)
+        } else { // 30d
+          startDate.setDate(startDate.getDate() - 30)
+        }
 
-        const startDate = formatDate(firstDay)
-        const endDate = formatDate(lastDay)
+        const formattedStartDate = formatDate(startDate)
+        const formattedEndDate = formatDate(now)
 
         const response = await fetch(
-          `https://easy-ferry.uc.r.appspot.com/get-sales-ferry?business=Gaviota&start_date=${startDate}&end_date=${endDate}`
+          `https://easy-ferry.uc.r.appspot.com/get-sales-ferry?business=Gaviota&start_date=${formattedStartDate}&end_date=${formattedEndDate}`
         )
 
         if (!response.ok) {
@@ -73,17 +83,16 @@ export function Dashboard() {
         }
         
         const result = await response.json()
-        console.log(result)
         const data = Array.isArray(result.data) ? result.data : [result.data]
 
-        const processedData = processChartData(data)
+        const processedData = processChartData(data, timeRange)
         setChartData(processedData)
 
         const paidTotal = data.reduce((sum: number, item: any) => 
-          item.payed === 'Si' ? sum + (item.price || 0) : sum, 0);
+          item.payed === 'Si' ? sum + (item.price || 0) : sum, 0)
         
         const unpaidTotal = data.reduce((sum: number, item: any) => 
-          item.payed !== 'Si' ? sum + (item.price || 0) : sum, 0);
+          item.payed !== 'Si' ? sum + (item.price || 0) : sum, 0)
         
         setSummaryValues([
           { period: { label: 'Pagados', value: paidTotal } },
@@ -102,7 +111,7 @@ export function Dashboard() {
     }
 
     fetchData()
-  }, [])
+  }, [timeRange])
 
   const formatDate = (date: Date) => {
     const year = date.getFullYear()
@@ -111,100 +120,93 @@ export function Dashboard() {
     return `${year}-${month}-${day}`
   }
 
-  const processChartData = (data: any[]) => {
-    const groupedData: Record<string, { date: string; paid: number; unpaid: number }> = {}
+  const processChartData = (data: any[], range: TimeRange) => {
+    const days = range === "7d" ? 7 : range === "15d" ? 15 : 30
+    const today = new Date()
+    const dateMap: Record<string, { date: string; paid: number; unpaid: number }> = {}
 
+    // Inicializamos todas las fechas del rango con valores en 0
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      const dateStr = formatDate(date)
+      dateMap[dateStr] = { date: dateStr, paid: 0, unpaid: 0 }
+    }
+
+    // Procesamos los datos reales
     data.forEach((item: any) => {
       if (!item.date) return
 
-      // Usamos la fecha exacta como viene del response sin modificaciones
-      const date = item.date
-      if (!groupedData[date]) {
-        groupedData[date] = { date, paid: 0, unpaid: 0 }
-      }
-
-      if (item.payed?.trim().toLowerCase() === 'si') {
-        groupedData[date].paid += item.price || 0
-      } else {
-        groupedData[date].unpaid += item.price || 0
+      const dateStr = item.date
+      if (dateMap[dateStr]) {
+        if (item.payed?.trim().toLowerCase() === 'si') {
+          dateMap[dateStr].paid += item.price || 0
+        } else {
+          dateMap[dateStr].unpaid += item.price || 0
+        }
       }
     })
 
-    // Convertir a array y ordenar por fecha (de menor a mayor)
-    const sortedData = Object.values(groupedData).sort((a, b) => {
+    // Convertimos a array y ordenamos por fecha
+    return Object.values(dateMap).sort((a, b) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime()
     })
-
-    return sortedData
   }
 
-  const filteredData = chartData.filter((item) => {
-    if (timeRange === "30d") return true
-    
-    const date = new Date(item.date)
-    const now = new Date()
-    let daysToSubtract = 30
-    if (timeRange === "15d") {
-      daysToSubtract = 15
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7
-    }
-    const startDate = new Date(now)
-    startDate.setDate(startDate.getDate() - daysToSubtract)
-    return date >= startDate
-  })
-
   return (
-    <main className="grid grid-cols-1 md:grid-cols-2 min-h-screen">
-      {/* Dashboard */}
-      <div className="p-4">
-        <Card className="h-[500px]">
-          <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
-            <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-3 sm:py-3">
-              <CardTitle>Panel de gráficos</CardTitle>
-              <CardDescription>Mostrando ventas del mes actual</CardDescription>
-            </div>
-            <div className="flex">
-              {summaryValues.map((item) => (
-                <button
-                  key={item.period.label}
-                  className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-2 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-4"
-                >
-                  <span className="text-xs text-muted-foreground">{item.period.label}</span>
-                  <span className="text-lg font-bold leading-none sm:text-3xl">
-                    ${item.period.value.toLocaleString()}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </CardHeader>
-          <CardContent className="px-2 sm:p-6">
-            <div className="aspect-auto h-[250px] w-full">
-              {loading ? (
-                <div className="flex h-full items-center justify-center">Cargando datos...</div>
-              ) : chartData.length > 0 ? (
-                <ChartContainer config={chartConfig}>
-                  <div className='w-full h-full'>
-                  <div className="flex justify-end mb-4">
-                    <Select value={timeRange} onValueChange={setTimeRange}>
-                      <SelectTrigger className="w-[160px] rounded-lg">
-                        <SelectValue placeholder="Todos los datos" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        <SelectItem value="30d" className="rounded-lg">
-                          Últimos 30 días
-                        </SelectItem>
-                        <SelectItem value="15d" className="rounded-lg">
-                          Últimos 15 días
-                        </SelectItem>
-                        <SelectItem value="7d" className="rounded-lg">
-                          Últimos 7 días
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={filteredData}>
+    <main className="min-h-screen p-4">
+      <Card className="h-[500px] w-full overflow-hidden"> {/* Añadido overflow-hidden */}
+        <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
+          <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-3 sm:py-3">
+            <CardTitle>Panel de gráficos</CardTitle>
+            <CardDescription>
+              Mostrando ventas de los últimos {timeRange === "7d" ? "7" : timeRange === "15d" ? "15" : "30"} días
+            </CardDescription>
+          </div>
+          <div className="flex">
+            {summaryValues.map((item) => (
+              <button
+                key={item.period.label}
+                className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-2 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-4"
+              >
+                <span className="text-xs text-muted-foreground">{item.period.label}</span>
+                <span className="text-lg font-bold leading-none sm:text-3xl">
+                  ${item.period.value.toLocaleString()}
+                </span>
+              </button>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent className="h-[calc(100%-120px)] px-2 sm:p-6"> {/* Ajuste de altura */}
+          {loading ? (
+            <div className="flex h-full items-center justify-center">Cargando datos...</div>
+          ) : chartData.length > 0 ? (
+            <ChartContainer config={chartConfig}>
+              <div className="flex flex-col h-full">
+                <div className="flex justify-end mb-4">
+                  <Select 
+                    value={timeRange} 
+                    onValueChange={handleTimeRangeChange} // Usamos el manejador corregido
+                  >
+                    <SelectTrigger className="w-[160px] rounded-lg">
+                      <SelectValue placeholder="Seleccione rango" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="30d" className="rounded-lg">
+                        Últimos 30 días
+                      </SelectItem>
+                      <SelectItem value="15d" className="rounded-lg">
+                        Últimos 15 días
+                      </SelectItem>
+                      <SelectItem value="7d" className="rounded-lg">
+                        Últimos 7 días
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex-1 min-h-0"> {/* Contenedor flexible para el gráfico */}
+                  <ResponsiveContainer width="100%" height="55%">
+                    <AreaChart data={chartData}>
                       <defs>
                         <linearGradient id="fillPaid" x1="0" y1="0" x2="0" y2="1">
                           <stop
@@ -237,7 +239,7 @@ export function Dashboard() {
                         tickLine={false}
                         axisLine={false}
                         tickMargin={8}
-                        minTickGap={32}
+                        minTickGap={8}
                         tickFormatter={(value) => {
                           const [year, month, day] = value.split('-')
                           return `${day}/${month}`
@@ -271,20 +273,14 @@ export function Dashboard() {
                       />
                     </AreaChart>
                   </ResponsiveContainer>
-                  </div>
-                </ChartContainer>
-              ) : (
-                <div className="flex h-full items-center justify-center">No hay datos disponibles</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Mapa */}
-      <div className="p-4">
-        <MapWithMarkers />
-      </div>
+                </div>
+              </div>
+            </ChartContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center">No hay datos disponibles</div>
+          )}
+        </CardContent>
+      </Card>
     </main>
   )
 }

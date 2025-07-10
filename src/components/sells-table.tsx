@@ -308,7 +308,7 @@ export function SellsTable() {
   const [endCalendarOpen, setEndCalendarOpen] = React.useState(false)
 
   const [reportDate, setReportDate] = React.useState<Date | undefined>(new Date())
-  const [reportTime, setReportTime] = React.useState("7")
+  const [reportTime, setReportTime] = React.useState("am") // Changed default value to "am"
   const [generatingReport, setGeneratingReport] = React.useState(false)
 
   React.useEffect(() => {
@@ -413,11 +413,9 @@ export function SellsTable() {
             .trim()
             .replace(/_$/, ''); 
         } else {
-          // Si no se puede extraer el nombre del archivo del Content-Disposition
           throw new Error("No se pudo determinar el nombre del archivo desde el servidor");
         }
       } else {
-        // Si no hay header Content-Disposition
         throw new Error("El servidor no proporcionó información del nombre del archivo");
       }
 
