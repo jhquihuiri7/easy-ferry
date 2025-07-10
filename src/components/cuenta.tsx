@@ -22,12 +22,14 @@ export function Cuenta() {
   const [responsibleName, setResponsibleName] = useState("")
   const [responsiblePassport, setResponsiblePassport] = useState("")
   const [responsiblePhone, setResponsiblePhone] = useState("")
+  const [responsibleEmail, setResponsibleEmail] = useState("")
   const [captainName, setCaptainName] = useState("")
-  const [captainPassword, setCaptainPassword] = useState("")
+  const [captainPassport, setCaptainPassport] = useState("")
   const [sailor1Name, setSailor1Name] = useState("")
   const [sailor1Passport, setSailor1Passport] = useState("")
   const [sailor2Name, setSailor2Name] = useState("")
   const [sailor2Passport, setSailor2Passport] = useState("")
+  const [ferryRegistration, setFerryRegistration] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSavingOwner, setIsSavingOwner] = useState(false)
   const [isSavingCrew, setIsSavingCrew] = useState(false)
@@ -81,12 +83,14 @@ export function Cuenta() {
         setResponsibleName(crewData.responsible_name || "")
         setResponsiblePassport(crewData.responsible_passport || "")
         setResponsiblePhone(crewData.responsible_phone || "")
+        setResponsibleEmail(crewData.responsible_email || "")
         setCaptainName(crewData.captain_name || "")
-        setCaptainPassword(crewData.captain_password || "")
+        setCaptainPassport(crewData.captain_passport || "")
         setSailor1Name(crewData.sailor1_name || "")
         setSailor1Passport(crewData.sailor1_passport || "")
         setSailor2Name(crewData.sailor2_name || "")
         setSailor2Passport(crewData.sailor2_passport || "")
+        setFerryRegistration(crewData.ferry_registration || "")
         
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido')
@@ -159,12 +163,14 @@ export function Cuenta() {
           responsible_name: responsibleName,
           responsible_passport: responsiblePassport,
           responsible_phone: responsiblePhone,
+          responsible_email: responsibleEmail,
           captain_name: captainName,
-          captain_password: captainPassword,
+          captain_passport: captainPassport,
           sailor1_name: sailor1Name,
           sailor1_passport: sailor1Passport,
           sailor2_name: sailor2Name,
-          sailor2_passport: sailor2Passport
+          sailor2_passport: sailor2Passport,
+          ferry_registration: ferryRegistration
         })
       })
 
@@ -277,6 +283,15 @@ export function Cuenta() {
                 />
               </div>
               <div className="grid gap-2">
+                <Label htmlFor="ferryRegistration">Matrícula del Ferry</Label>
+                <Input
+                  id="ferryRegistration"
+                  placeholder="NGSD-23"
+                  value={ferryRegistration}
+                  onChange={(e) => setFerryRegistration(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="responsibleName">Nombre del Responsable</Label>
                 <Input
                   id="responsibleName"
@@ -304,6 +319,16 @@ export function Cuenta() {
                 />
               </div>
               <div className="grid gap-2">
+                <Label htmlFor="responsibleEmail">Email del Responsable</Label>
+                <Input
+                  id="responsibleEmail"
+                  type="email"
+                  placeholder="mario@gmail.com"
+                  value={responsibleEmail}
+                  onChange={(e) => setResponsibleEmail(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="captainName">Nombre del Capitán</Label>
                 <Input
                   id="captainName"
@@ -313,13 +338,12 @@ export function Cuenta() {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="captainPassword">Contraseña del Capitán</Label>
+                <Label htmlFor="captainPassport">Pasaporte del Capitán</Label>
                 <Input
-                  id="captainPassword"
-                  type="password"
-                  placeholder="Contraseña"
-                  value={captainPassword}
-                  onChange={(e) => setCaptainPassword(e.target.value)}
+                  id="captainPassport"
+                  placeholder="04324324320"
+                  value={captainPassport}
+                  onChange={(e) => setCaptainPassport(e.target.value)}
                 />
               </div>
               <div className="grid gap-2">
