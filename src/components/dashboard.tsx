@@ -1,7 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { Area, AreaChart, CartesianGrid, XAxis, ResponsiveContainer } from 'recharts'
+import { Bar, BarChart, CartesianGrid, XAxis, ResponsiveContainer } from 'recharts'
+import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
 import {
   Card,
   CardContent,
@@ -14,6 +15,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from '@/components/ui/chart'
 import {
   Select,
@@ -23,17 +26,28 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-const chartConfig = {
+const barChartConfig = {
   views: {
     label: 'Ventas',
   },
   paid: {
     label: 'Pagado',
-    color: 'hsl(var(--chart-1))',
+    color: '#808080', // Gris
   },
   unpaid: {
     label: 'No pagado',
-    color: 'hsl(var(--chart-2))',
+    color: '#000000', // Negro
+  },
+} satisfies ChartConfig
+
+const radialChartConfig = {
+  paid: {
+    label: "Pagado",
+    color: "#808080", // Gris
+  },
+  unpaid: {
+    label: "No pagado",
+    color: "#000000", // Negro
   },
 } satisfies ChartConfig
 
@@ -41,14 +55,11 @@ type TimeRange = "7d" | "15d" | "30d"
 
 export function Dashboard() {
   const [chartData, setChartData] = React.useState<any[]>([])
-  const [summaryValues, setSummaryValues] = React.useState([
-    { period: { label: 'Pagados', value: 0 } },
-    { period: { label: 'No pagados', value: 0 } },
-  ])
+  const [paidCount, setPaidCount] = React.useState(0)
+  const [unpaidCount, setUnpaidCount] = React.useState(0)
   const [loading, setLoading] = React.useState(true)
   const [timeRange, setTimeRange] = React.useState<TimeRange>("30d")
 
-  // Manejador para el cambio de rango de tiempo
   const handleTimeRangeChange = (value: string) => {
     if (value === "7d" || value === "15d" || value === "30d") {
       setTimeRange(value)
@@ -62,7 +73,6 @@ export function Dashboard() {
         const now = new Date()
         const startDate = new Date(now)
         
-        // Ajustamos la fecha de inicio según el rango seleccionado
         if (timeRange === "7d") {
           startDate.setDate(startDate.getDate() - 7)
         } else if (timeRange === "15d") {
@@ -88,23 +98,17 @@ export function Dashboard() {
         const processedData = processChartData(data, timeRange)
         setChartData(processedData)
 
-        const paidTotal = data.reduce((sum: number, item: any) => 
-          item.payed === 'Si' ? sum + (item.price || 0) : sum, 0)
+        // Contar reservas en lugar de sumar montos
+        const paid = data.filter((item: any) => item.payed?.trim().toLowerCase() === 'si').length
+        const unpaid = data.filter((item: any) => item.payed?.trim().toLowerCase() !== 'si').length
         
-        const unpaidTotal = data.reduce((sum: number, item: any) => 
-          item.payed !== 'Si' ? sum + (item.price || 0) : sum, 0)
-        
-        setSummaryValues([
-          { period: { label: 'Pagados', value: paidTotal } },
-          { period: { label: 'No pagados', value: unpaidTotal } },
-        ])
+        setPaidCount(paid)
+        setUnpaidCount(unpaid)
       } catch (error) {
         console.error('Error fetching data:', error)
         setChartData([])
-        setSummaryValues([
-          { period: { label: 'Pagados', value: 0 } },
-          { period: { label: 'No pagados', value: 0 } },
-        ])
+        setPaidCount(0)
+        setUnpaidCount(0)
       } finally {
         setLoading(false)
       }
@@ -125,7 +129,6 @@ export function Dashboard() {
     const today = new Date()
     const dateMap: Record<string, { date: string; paid: number; unpaid: number }> = {}
 
-    // Inicializamos todas las fechas del rango con valores en 0
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today)
       date.setDate(date.getDate() - i)
@@ -133,7 +136,6 @@ export function Dashboard() {
       dateMap[dateStr] = { date: dateStr, paid: 0, unpaid: 0 }
     }
 
-    // Procesamos los datos reales
     data.forEach((item: any) => {
       if (!item.date) return
 
@@ -147,15 +149,22 @@ export function Dashboard() {
       }
     })
 
-    // Convertimos a array y ordenamos por fecha
     return Object.values(dateMap).sort((a, b) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime()
     })
   }
 
+  const radialData = [{
+    name: "reservas",
+    paid: paidCount,
+    unpaid: unpaidCount
+  }]
+
+  const totalReservations = paidCount + unpaidCount
+
   return (
     <main className="min-h-screen p-4">
-      <Card className="h-[500px] w-full overflow-hidden"> {/* Añadido overflow-hidden */}
+      <Card className="h-[500px] w-full overflow-hidden">
         <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row">
           <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-3 sm:py-3">
             <CardTitle>Panel de gráficos</CardTitle>
@@ -163,30 +172,75 @@ export function Dashboard() {
               Mostrando ventas de los últimos {timeRange === "7d" ? "7" : timeRange === "15d" ? "15" : "30"} días
             </CardDescription>
           </div>
-          <div className="flex">
-            {summaryValues.map((item) => (
-              <button
-                key={item.period.label}
-                className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-2 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-4"
+          <div className="flex h-[100px] w-full sm:w-[250px]">
+            <ChartContainer
+              config={radialChartConfig}
+              className="mx-auto aspect-auto w-full h-[200px]"
+            >
+              <RadialBarChart
+                data={radialData}
+                endAngle={180}
+                innerRadius={80}
+                outerRadius={130}
               >
-                <span className="text-xs text-muted-foreground">{item.period.label}</span>
-                <span className="text-lg font-bold leading-none sm:text-3xl">
-                  ${item.period.value.toLocaleString()}
-                </span>
-              </button>
-            ))}
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                  <Label
+                    content={({ viewBox }) => {
+                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                        return (
+                          <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) - 16}
+                              className="fill-foreground text-2xl font-bold"
+                            >
+                              {totalReservations.toLocaleString()}
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 4}
+                              className="fill-muted-foreground"
+                            >
+                              Total Reservas
+                            </tspan>
+                          </text>
+                        )
+                      }
+                    }}
+                  />
+                </PolarRadiusAxis>
+                <RadialBar
+                  dataKey="paid"
+                  stackId="a"
+                  cornerRadius={5}
+                  fill="#808080"
+                  className="stroke-transparent stroke-2"
+                />
+                <RadialBar
+                  dataKey="unpaid"
+                  fill="#000000"
+                  stackId="a"
+                  cornerRadius={5}
+                  className="stroke-transparent stroke-2"
+                />
+              </RadialBarChart>
+            </ChartContainer>
           </div>
         </CardHeader>
-        <CardContent className="h-[calc(100%-120px)] px-2 sm:p-6"> {/* Ajuste de altura */}
+        <CardContent className="h-[calc(100%-120px)] px-2 sm:p-6">
           {loading ? (
             <div className="flex h-full items-center justify-center">Cargando datos...</div>
           ) : chartData.length > 0 ? (
-            <ChartContainer config={chartConfig}>
+            <ChartContainer config={barChartConfig} className="aspect-auto h-[300px] w-full">
               <div className="flex flex-col h-full">
-                <div className="flex justify-end mb-4">
+                <div className="flex justify-start mb-4">
                   <Select 
                     value={timeRange} 
-                    onValueChange={handleTimeRangeChange} // Usamos el manejador corregido
+                    onValueChange={handleTimeRangeChange}
                   >
                     <SelectTrigger className="w-[160px] rounded-lg">
                       <SelectValue placeholder="Seleccione rango" />
@@ -204,35 +258,9 @@ export function Dashboard() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex-1 min-h-0"> {/* Contenedor flexible para el gráfico */}
-                  <ResponsiveContainer width="100%" height="55%">
-                    <AreaChart data={chartData}>
-                      <defs>
-                        <linearGradient id="fillPaid" x1="0" y1="0" x2="0" y2="1">
-                          <stop
-                            offset="5%"
-                            stopColor="var(--color-paid)"
-                            stopOpacity={0.8}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="var(--color-paid)"
-                            stopOpacity={0.1}
-                          />
-                        </linearGradient>
-                        <linearGradient id="fillUnpaid" x1="0" y1="0" x2="0" y2="1">
-                          <stop
-                            offset="5%"
-                            stopColor="var(--color-unpaid)"
-                            stopOpacity={0.8}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="var(--color-unpaid)"
-                            stopOpacity={0.1}
-                          />
-                        </linearGradient>
-                      </defs>
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer>
+                    <BarChart data={chartData}>
                       <CartesianGrid vertical={false} />
                       <XAxis
                         dataKey="date"
@@ -257,21 +285,20 @@ export function Dashboard() {
                           />
                         }
                       />
-                      <Area
+                      <ChartLegend content={<ChartLegendContent />} />
+                      <Bar
                         dataKey="unpaid"
-                        type="natural"
-                        fill="url(#fillUnpaid)"
-                        stroke="var(--color-unpaid)"
                         stackId="a"
+                        fill="#000000" // Negro
+                        radius={[4, 4, 4, 4]}
                       />
-                      <Area
+                      <Bar
                         dataKey="paid"
-                        type="natural"
-                        fill="url(#fillPaid)"
-                        stroke="var(--color-paid)"
                         stackId="a"
+                        fill="#808080" // Gris
+                        radius={[4, 4, 4, 4]}
                       />
-                    </AreaChart>
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>

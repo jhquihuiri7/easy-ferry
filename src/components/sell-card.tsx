@@ -54,9 +54,10 @@ export function SellCard({
   const [status, setStatus] = React.useState(initialData?.status ?? "");
   const [payed, setPayed] = React.useState<boolean>(
     typeof initialData?.payed === "string" 
-      ? initialData.payed === "true" 
+      ? initialData.payed === "Si" 
       : initialData?.payed ?? true
   );
+  console.log(initialData);
   const [payment, setPayment] = React.useState(initialData?.payment ?? "efectivo");
   const [isLoading, setIsLoading] = React.useState(false);
 
