@@ -1,24 +1,23 @@
-import { RegisterForm } from "@/components/register-form";
-import { notFound } from "next/navigation";
-import { Toaster } from "sonner";
+'use client';
 
-export default async function RegisterPage({
-  searchParams,
-}: {
-  searchParams: { token?: string };
-}) {
-  const params = await searchParams;
-  const token = params.token;
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { RegisterForm } from '@/components/register-form';
+import { Toaster } from 'sonner';
+import { Suspense } from 'react';
 
-  if (!token) {
-    return notFound();
-  }
+function RegisterPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const token = searchParams.get('token');
 
-  const isValidToken = await validateToken(token);
+  useEffect(() => {
+    if (!token) {
+      router.push("/not-found"); // redirecciona si no hay token
+    }
+  }, [token, router]);
 
-  if (!isValidToken) {
-    return notFound();
-  }
+  if (!token) return null;
 
   return (
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
@@ -30,15 +29,10 @@ export default async function RegisterPage({
   );
 }
 
-async function validateToken(token: string) {
-  try {
-    const response = await fetch(
-      `https://easy-ferry.uc.r.appspot.com/validar-token?token=${token}`
-    );
-    const data = await response.json();
-    return data.valid;
-  } catch (error) {
-    console.error("Error validating token:", error);
-    return false;
-  }
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <RegisterPageContent />
+    </Suspense>
+  );
 }

@@ -1,4 +1,5 @@
 "use client"
+
 import * as React from "react"
 import { Ship, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -35,32 +36,58 @@ export function RegisterForm({
   const [email, setEmail] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
   const [isFetchingEmail, setIsFetchingEmail] = React.useState(false)
+  const [isValidatingToken, setIsValidatingToken] = React.useState(true)
+  const [isValidToken, setIsValidToken] = React.useState(false)
 
-  // Obtener el email asociado al token cuando el componente se monta
+  // Validate token and fetch email when component mounts
   React.useEffect(() => {
-    const fetchEmail = async () => {
-      setIsFetchingEmail(true)
+    const validateTokenAndFetchEmail = async () => {
       try {
-        const response = await fetch(`https://easy-ferry.uc.r.appspot.com/get-token-mail?token=${token}`)
+        // First validate the token
+        const validationResponse = await fetch(
+          `https://easy-ferry.uc.r.appspot.com/validar-token?token=${token}`
+        )
         
-        if (!response.ok) {
-          throw new Error("Error al obtener el email asociado al token")
+        if (!validationResponse.ok) {
+          throw new Error("Token validation failed")
         }
 
-        const data = await response.json()
-        setEmail(data.email)
+        const validationData = await validationResponse.json()
+        
+        if (!validationData.valid) {
+          toast.error("Token inválido o expirado")
+          router.push("/not-found")
+          return
+        }
+
+        setIsValidToken(true)
+
+        // Then fetch the associated email
+        setIsFetchingEmail(true)
+        const emailResponse = await fetch(
+          `https://easy-ferry.uc.r.appspot.com/get-token-mail?token=${token}`
+        )
+        
+        if (!emailResponse.ok) {
+          throw new Error("Failed to fetch associated email")
+        }
+
+        const emailData = await emailResponse.json()
+        setEmail(emailData.email)
       } catch (error) {
-        console.error("Error al obtener email:", error)
+        console.error("Error:", error)
         toast.error("Error", {
-          description: "No se pudo obtener el email asociado al token de registro",
+          description: "No se pudo validar el token o obtener el email asociado",
         })
+        router.push("/not-found")
       } finally {
+        setIsValidatingToken(false)
         setIsFetchingEmail(false)
       }
     }
 
-    fetchEmail()
-  }, [token])
+    validateTokenAndFetchEmail()
+  }, [token, router])
 
   const markTokenAsUsed = async () => {
     try {
@@ -76,8 +103,6 @@ export function RegisterForm({
       if (!response.ok) {
         throw new Error("Error al marcar el token como usado")
       }
-
-      console.log("Token marcado como usado exitosamente")
     } catch (error) {
       console.error("Error al marcar token:", error)
     }
@@ -98,7 +123,7 @@ export function RegisterForm({
     const payload = {
       first_name: firstName,
       last_name: lastName,
-      email, // Añadimos el email al payload
+      email,
       password,
       business_id: parseInt(business, 10),
       token
@@ -118,25 +143,13 @@ export function RegisterForm({
         throw new Error("Error al registrar usuario")
       }
 
-      const result = await response.json()
-      console.log("Registro exitoso:", result)
-
-      // Marcar el token como usado
       await markTokenAsUsed()
 
-      // Mostrar toast de éxito
       toast.success("Registro exitoso", {
         description: "Tu cuenta ha sido creada correctamente",
         duration: 2000,
       })
 
-      // Limpiar formulario
-      setFirstName("")
-      setLastName("")
-      setPassword("")
-      setBusiness("")
-
-      // Redirigir después de 2 segundos
       setTimeout(() => {
         router.push("https://easy-ferry.vercel.app/login")
       }, 2000)
@@ -151,15 +164,25 @@ export function RegisterForm({
     }
   }
 
+  if (isValidatingToken) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p>Validando token de registro...</p>
+      </div>
+    )
+  }
+
+  if (!isValidToken) {
+    return null
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
+            <a href="#" className="flex flex-col items-center gap-2 font-medium">
               <div className="flex size-8 items-center justify-center rounded-md">
                 <Ship className="size-6" />
               </div>
