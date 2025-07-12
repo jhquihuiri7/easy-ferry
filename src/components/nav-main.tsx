@@ -56,9 +56,16 @@ export function NavMain({
                     <SidebarMenuSub>
                       {item.items.filter(subItem => subItem.show).map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton asChild>
-                            <a href="#" onClick={() => setSelectedItem(subItem.title)}>
-                              <span>{subItem.title}</span>
+                          <SidebarMenuSubButton 
+                            asChild
+                            onClick={() => {
+                                setSelectedItem(subItem.title)
+                              }}
+                            >
+                            <a href="#">
+                              <span className={subItem.title === selectedItem ? "font-bold text-primary" : ""}>
+                                {subItem.title}
+                              </span>
                             </a>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
