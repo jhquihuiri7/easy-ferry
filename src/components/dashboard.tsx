@@ -32,22 +32,22 @@ const barChartConfig = {
   },
   paid: {
     label: 'Pagado',
-    color: '#808080', // Gris
+    color: '#2b7fff', // Gris
   },
   unpaid: {
     label: 'No pagado',
-    color: '#000000', // Negro
+    color: '#8ec5ff', // Negro
   },
 } satisfies ChartConfig
 
 const radialChartConfig = {
   paid: {
     label: "Pagado",
-    color: "#808080", // Gris
+    color: "#2b7fff", // Gris
   },
   unpaid: {
     label: "No pagado",
-    color: "#000000", // Negro
+    color: "#8ec5ff", // Negro
   },
 } satisfies ChartConfig
 
@@ -217,12 +217,12 @@ export function Dashboard() {
                   dataKey="paid"
                   stackId="a"
                   cornerRadius={5}
-                  fill="#808080"
+                  fill="#2b7fff"
                   className="stroke-transparent stroke-2"
                 />
                 <RadialBar
                   dataKey="unpaid"
-                  fill="#000000"
+                  fill="#8ec5ff"
                   stackId="a"
                   cornerRadius={5}
                   className="stroke-transparent stroke-2"
@@ -289,13 +289,13 @@ export function Dashboard() {
                       <Bar
                         dataKey="unpaid"
                         stackId="a"
-                        fill="#000000" // Negro
+                        fill="#8ec5ff" // Negro
                         radius={[4, 4, 4, 4]}
                       />
                       <Bar
                         dataKey="paid"
                         stackId="a"
-                        fill="#808080" // Gris
+                        fill="#2b7fff" // Gris
                         radius={[4, 4, 4, 4]}
                       />
                     </BarChart>
