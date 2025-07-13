@@ -238,7 +238,7 @@ export function RegisterForm({
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Empresa</SelectLabel>
-                    <SelectItem value="1">Gaviota</SelectItem>
+                    {/*<SelectItem value="1">Gaviota</SelectItem>*/}
                     <SelectItem value="2">Viamar</SelectItem>
                   </SelectGroup>
                 </SelectContent>

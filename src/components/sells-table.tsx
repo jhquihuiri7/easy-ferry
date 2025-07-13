@@ -389,6 +389,7 @@ export function SellsTable() {
     const formattedDate = format(reportDate, "yyyy-MM-dd");
 
     setGeneratingReport(true);
+    console.log(business);
     try {
       const response = await fetch("https://easy-ferry.uc.r.appspot.com/marine-report", {
         method: "POST",
