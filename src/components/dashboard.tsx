@@ -70,6 +70,11 @@ export function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true)
+        const business = localStorage.getItem('easyferry-business')
+        if (!business) {
+          throw new Error('No business found in localStorage')
+        }
+
         const now = new Date()
         const startDate = new Date(now)
         
@@ -85,7 +90,7 @@ export function Dashboard() {
         const formattedEndDate = formatDate(now)
 
         const response = await fetch(
-          `https://easy-ferry.uc.r.appspot.com/get-sales-ferry?business=Gaviota&start_date=${formattedStartDate}&end_date=${formattedEndDate}`
+          `https://easy-ferry.uc.r.appspot.com/get-sales-ferry?business=${encodeURIComponent(business)}&start_date=${formattedStartDate}&end_date=${formattedEndDate}`
         )
 
         if (!response.ok) {
