@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/popover";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { boatNames } from "@/constants/embarcaciones";
 
 export function SellCard({
   initialData,
@@ -272,9 +273,12 @@ export function SellCard({
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Embarcaciones</SelectLabel>
-                        <SelectItem value="Gaviota">Gaviota</SelectItem>
-                        <SelectItem value="Arrecife">Arrecife</SelectItem>
-                        <SelectItem value="Otra">Otra embarcación</SelectItem>
+                        <SelectLabel>Embarcaciones</SelectLabel>
+                        {boatNames.map((boat) => (
+                          <SelectItem key={boat} value={boat}>
+                            {boat}
+                          </SelectItem>
+                        ))}
                       </SelectGroup>
                     </SelectContent>
                   </Select>

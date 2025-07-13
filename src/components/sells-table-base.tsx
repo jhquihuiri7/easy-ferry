@@ -74,7 +74,8 @@ export type Sale = {
   status: string,
   notes: string,
   payed: string,
-  payment: string
+  payment: string,
+  price: number // Nuevo campo como number
 }
 
 export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
@@ -118,7 +119,7 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
         <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div className="text-right font-medium whitespace-nowrap">{row.getValue("age")}</div>,
+    cell: ({ row }) => <div className="text-left font-medium whitespace-nowrap">{row.getValue("age")}</div>,
   },
   {
     accessorKey: "route",
@@ -234,11 +235,21 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
     accessorKey: "payment",
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
-        Método de pago
+        Método pago
         <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("payment")}</div>,
+  },
+  {
+    accessorKey: "price",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Precio
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="text-left font-medium whitespace-nowrap">${row.getValue("price")}</div>,
   },
   {
     id: "actions",
@@ -602,6 +613,7 @@ export function SellsTableBase() {
                     <TableRow key={headerGroup.id}>
                       {headerGroup.headers.map((header) => (
                         <TableHead 
+                          className="text-left"
                           key={header.id} 
                           colSpan={header.colSpan}
                           style={{ 

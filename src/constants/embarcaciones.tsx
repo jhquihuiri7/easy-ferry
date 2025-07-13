@@ -1,0 +1,23 @@
+export const boatNames: string[] = [
+  "Angel Kellie",
+  "Tropical Bird",
+  "Privilegio",
+  "Osprey",
+  "Gaviota",
+  "Blessing",
+  "Andy 1",
+  "Andy 2",
+  "Arrecife",
+  "D'Luis",
+  "Destiny",
+  "Legendary",
+  "Brithany",
+  "Cally",
+  "New Ocean",
+  "New Arleth",
+  "Queen Jenny",
+  "Susy Love",
+  "Gladel",
+  "Lancha Andrea",
+  "Luna Azul"
+];

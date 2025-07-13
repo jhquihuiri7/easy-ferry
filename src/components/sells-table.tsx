@@ -74,7 +74,8 @@ export type Sale = {
   status: string,
   notes: string,
   payed: string,
-  payment: string
+  payment: string,
+  price: number // Cambiado a number
 }
 
 export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
@@ -118,7 +119,7 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
         <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div className="text-right font-medium whitespace-nowrap">{row.getValue("age")}</div>,
+    cell: ({ row }) => <div className="text-left font-medium whitespace-nowrap">{row.getValue("age")}</div>,
   },
   {
     accessorKey: "route",
@@ -234,11 +235,21 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
     accessorKey: "payment",
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
-        Método de pago
+        Método pago
         <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
     cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("payment")}</div>,
+  },
+  {
+    accessorKey: "price",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Precio
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="text-left font-medium whitespace-nowrap">${row.getValue("price")}</div>, // Formateado como número
   },
   {
     id: "actions",
@@ -278,11 +289,6 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
                 />
               </DialogContent>
             </Dialog>
-            
-            {/*<DropdownMenuItem>
-              <Ticket className="mr-2 h-4 w-4" />
-              Ticket
-            </DropdownMenuItem>*/}
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -309,7 +315,7 @@ export function SellsTable() {
   const [endCalendarOpen, setEndCalendarOpen] = React.useState(false)
 
   const [reportDate, setReportDate] = React.useState<Date | undefined>(new Date())
-  const [reportTime, setReportTime] = React.useState("am") // Changed default value to "am"
+  const [reportTime, setReportTime] = React.useState("am")
   const [generatingReport, setGeneratingReport] = React.useState(false)
 
   React.useEffect(() => {
@@ -405,7 +411,6 @@ export function SellsTable() {
 
       const contentDisposition = response.headers.get('Content-Disposition');
       let fileName = 'reporte.xlsx';
-      console.log(  )
       if (contentDisposition) {
         const fileNameMatch = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/i);
         if (fileNameMatch && fileNameMatch[1]) {
@@ -413,11 +418,7 @@ export function SellsTable() {
             .replace(/^["']|["']$/g, '')
             .trim()
             .replace(/_$/, ''); 
-        } else {
-          throw new Error("No se pudo determinar el nombre del archivo desde el servidor");
         }
-      } else {
-        throw new Error("El servidor no proporcionó información del nombre del archivo");
       }
 
       link.setAttribute('download', fileName);
@@ -427,13 +428,7 @@ export function SellsTable() {
       window.URL.revokeObjectURL(downloadUrl);
 
     } catch (error) {
-      let errorMessage = "Hubo un error al generar el reporte";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-      alert(errorMessage);
+      alert("Hubo un error al generar el reporte");
     } finally {
       setGeneratingReport(false);
     }
