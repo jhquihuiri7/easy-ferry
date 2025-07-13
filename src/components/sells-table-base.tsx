@@ -492,7 +492,7 @@ export function SellsTableBase() {
   return (
     <div className="flex-1 relative overflow-hidden">
       {Object.keys(rowSelection).some((key) => rowSelection[key]) && (
-        <div className="absolute top-0 right-0 p-4">
+        <div>
           <Button variant="destructive" onClick={handleDeleteSelected} disabled={deleting}>
             {deleting ? (
               <span className="flex items-center gap-2">
