@@ -278,10 +278,10 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
                 />
               </DialogContent>
             </Dialog>
-            <DropdownMenuItem>
+            {/*<DropdownMenuItem>
               <Ticket className="mr-2 h-4 w-4" />
               Ticket
-            </DropdownMenuItem>
+            </DropdownMenuItem>*/}
           </DropdownMenuContent>
         </DropdownMenu>
       )

@@ -24,12 +24,12 @@ export class NavUserManager {
     this.navUser = [
       {
         title: "Dashboard Usuario",
-        url: "#",
+        url: "",
         icon: BookOpen,
         isActive: true,
         items: [
           { title: "Cuenta", url: "/cuenta" },
-          { title: "Pagos", url: "/pagos" }
+          //{ title: "Pagos", url: "/pagos" }
         ],
       }
     ];

@@ -12,14 +12,14 @@ import { toast, Toaster } from "sonner";
 import { Pagos } from "@/components/pagos";
 import { Cuenta } from "@/components/cuenta";
 
-type VariableType = "opcion1" | "opcion2" | "opcion3" | "opcion4" | "opcion5" | "opcion6";
+type VariableType = "opcion1" | "opcion2" | "opcion3" | "opcion4" | "opcion5";// | "opcion6";
 
 const Componente1 = () => <Dashboard />;
 const Componente2 = () => <SellCard />;
 const Componente3 = () => <SellsTable/>;
 const Componente4 = () => <SellsTableBase />;
 const Componente5 = () => <Cuenta />;
-const Componente6 = () => <Pagos />;
+//const Componente6 = () => <Pagos />;
 
 const componenteMapa: Record<VariableType, React.FC> = {
   opcion1: Componente1,
@@ -27,7 +27,7 @@ const componenteMapa: Record<VariableType, React.FC> = {
   opcion3: Componente3,
   opcion4: Componente4,
   opcion5: Componente5,
-  opcion6: Componente6,
+  //opcion6: Componente6,
 };
 
 const MapaComponentes = ({ variable }: { variable: VariableType }) => {
@@ -159,7 +159,7 @@ export default function Page() {
     "Reportes": "opcion3",
     "Otros": "opcion4",
     "Cuenta": "opcion5",
-    "Pagos": "opcion6",
+    //"Pagos": "opcion6",
   };
 
   return (

@@ -24,7 +24,7 @@ export class NavMenuManager {
     this.navMenu = [
       {
         title: "Dashboard",
-        url: "#",
+        url: "",
         icon: SquareTerminal,
         isActive: true,
         items: [
