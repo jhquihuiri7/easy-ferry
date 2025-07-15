@@ -130,37 +130,41 @@ export function SellCardMultiple({
 
     const business = localStorage.getItem("easyferry-business") || "";
     const email = localStorage.getItem("easyferry-email") || "";
+    const formattedDate = date?.toISOString().split("T")[0];
 
-    const data = {
-      ...(isEdit && initialData?.id && { id: initialData.id }),
+    // Estructurar los datos como un array de ventas, una por cada pasajero
+    const salesData = passengers.map(passenger => ({
+      seller_email: email,
       business: business,
-      passengers,
+      name: passenger.name,
+      age: passenger.age === "" ? undefined : passenger.age,
       price: price === "" ? 0 : price,
       route,
       time,
       ferry,
       intermediary,
-      seller_email: email,
-      date: date?.toISOString().split("T")[0],
+      date: formattedDate,
+      notes: passenger.notes,
+      passport: passenger.passport,
       phone,
       status,
-      mail,
       payed: Boolean(payed),
       payment,
-    };
+      mail,
+    }));
 
     try {
-      const response = await fetch("https://easy-ferry.uc.r.appspot.com/sales", {
-        method: isEdit ? "PUT" : "POST",
+      const response = await fetch("https://easy-ferry.uc.r.appspot.com/sales-multiple", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(salesData),
       });
 
       if (response.ok) {
-        toast.success(`Reserva ${isEdit ? "actualizada" : "agregada"} con éxito`, {
-          description: `La reserva ha sido ${isEdit ? "actualizada" : "registrada"} correctamente.`,
+        toast.success(`Reservas múltiples ${isEdit ? "actualizadas" : "agregadas"} con éxito`, {
+          description: `Las ${passengers.length} reservas han sido ${isEdit ? "actualizadas" : "registradas"} correctamente.`,
         });
         if (onSuccess) {
           onSuccess();
@@ -187,15 +191,15 @@ export function SellCardMultiple({
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message || "Ocurrió un error al procesar la reserva.";
-        toast.error(`Error al ${isEdit ? "actualizar" : "crear"} la reserva`, {
+        const errorMessage = errorData.message || "Ocurrió un error al procesar las reservas.";
+        toast.error(`Error al ${isEdit ? "actualizar" : "crear"} las reservas`, {
           description: `Código ${response.status}: ${errorMessage}`,
         });
       }
     } catch (err) {
       console.error(err);
       toast.error("Error de conexión", {
-        description: `No se pudo ${isEdit ? "actualizar" : "crear"} la reserva por problemas de conexión.`,
+        description: `No se pudieron ${isEdit ? "actualizar" : "crear"} las reservas por problemas de conexión.`,
       });
     } finally {
       setIsLoading(false);
@@ -501,7 +505,7 @@ export function SellCardMultiple({
                 ) : isEdit ? (
                   "Guardar cambios"
                 ) : (
-                  "Registrar reserva"
+                  "Registrar reservas"
                 )}
               </Button>
               {!isFormValid && !isLoading && (
