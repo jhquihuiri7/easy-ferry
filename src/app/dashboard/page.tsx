@@ -12,15 +12,18 @@ import { toast, Toaster } from "sonner";
 import { Pagos } from "@/components/pagos";
 import { Cuenta } from "@/components/cuenta";
 import {DownloadsPage} from "@/components/downloads";
+import { SellCardMultiple } from "@/components/sell-card-multiple";
 
-type VariableType = "opcion1" | "opcion2" | "opcion3" | "opcion4" | "opcion5" | "opcion6";
+type VariableType = "opcion1" | "opcion2" | "opcion3" | "opcion4" | "opcion5" | "opcion6" | "opcion7";
 
 const Componente1 = () => <Dashboard />;
 const Componente2 = () => <SellCard />;
-const Componente3 = () => <SellsTable/>;
-const Componente4 = () => <SellsTableBase />;
-const Componente5 = () => <DownloadsPage />;
-const Componente6 = () => <Cuenta />;
+const Componente3 = () => <SellCardMultiple />;
+const Componente4 = () => <SellsTable/>;
+const Componente5 = () => <SellsTableBase />;
+const Componente6 = () => <DownloadsPage />;
+const Componente7 = () => <Cuenta />;
+
 const componenteMapa: Record<VariableType, React.FC> = {
   opcion1: Componente1,
   opcion2: Componente2,
@@ -28,6 +31,7 @@ const componenteMapa: Record<VariableType, React.FC> = {
   opcion4: Componente4,
   opcion5: Componente5,
   opcion6: Componente6,
+  opcion7: Componente7,
 };
 
 const MapaComponentes = ({ variable }: { variable: VariableType }) => {
@@ -156,10 +160,11 @@ export default function Page() {
   const opcionesValidas: Record<string, VariableType> = {
     "Panel Principal": "opcion1",
     "Ventas": "opcion2",
-    "Reportes": "opcion3",
-    "Otros": "opcion4",
-    "Descargas": "opcion5",
-    "Cuenta": "opcion6",
+    "Ventas Multiples": "opcion3",
+    "Reportes": "opcion4",
+    "Otros": "opcion5",
+    "Descargas": "opcion6",
+    "Cuenta": "opcion7",
   };
 
   return (

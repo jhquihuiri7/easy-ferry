@@ -30,6 +30,7 @@ export class NavMenuManager {
         items: [
           { title: "Panel Principal", url: "/panel-principal" },
           { title: "Ventas", url: "/ventas" },
+          { title: "Ventas Multiples", url: "/ventas-multiples" },
           { title: "Reportes", url: "/reportes" },
           { title: "Otros", url: "/otros" },
           { title: "Descargas", url: "/descargas" }
@@ -43,7 +44,7 @@ export class NavMenuManager {
       "Reportes": ["owner"],
       "Otros": ["owner"],
       "Descargas": ["owner","admin"],
-      "Equipo": ["owner"],
+      "Ventas Multiples": ["owner"],
       "Administrar Menu": ["owner"],
       "Mesas": ["owner"],
       "Pedidos": ["owner"]

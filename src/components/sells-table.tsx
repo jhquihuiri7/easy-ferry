@@ -14,6 +14,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, MoreHorizontal, Loader2, Ticket, Edit } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -66,16 +67,17 @@ export type Sale = {
   route: string
   time: string
   ferry: string
+  price: number
   intermediary: string
   date: string
   seller: string
   passport: string
   phone: string
-  status: string,
-  notes: string,
-  payed: string,
-  payment: string,
-  price: number // Cambiado a number
+  status: string
+  notes: string
+  payed: string
+  payment: string
+  mail: string
 }
 
 export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
@@ -150,6 +152,16 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
       </Button>
     ),
     cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("ferry")}</div>,
+  },
+  {
+    accessorKey: "price",
+    header: ({ column }) => (
+      <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
+        Precio
+        <ArrowUpDown className="h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => <div className="text-left font-medium whitespace-nowrap">${row.getValue("price")}</div>,
   },
   {
     accessorKey: "intermediary",
@@ -242,14 +254,14 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
     cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("payment")}</div>,
   },
   {
-    accessorKey: "price",
+    accessorKey: "mail",
     header: ({ column }) => (
       <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="flex items-center gap-1 whitespace-nowrap">
-        Precio
+        Email
         <ArrowUpDown className="h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div className="text-left font-medium whitespace-nowrap">${row.getValue("price")}</div>, // Formateado como número
+    cell: ({ row }) => <div className="whitespace-nowrap">{row.getValue("mail")}</div>,
   },
   {
     id: "actions",
@@ -284,7 +296,8 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
                   isEdit={true}
                   onSuccess={() => {
                     setIsDialogOpen(false)
-                    refetch() // ✅ Refrescar la tabla
+                    refetch()
+                    toast.success("Venta actualizada correctamente")
                   }}
                 />
               </DialogContent>
@@ -308,6 +321,7 @@ export function SellsTable() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({})
   const [deleting, setDeleting] = React.useState(false)
+  const [markingAsPaid, setMarkingAsPaid] = React.useState(false)
 
   const [startDate, setStartDate] = React.useState<Date | undefined>(subDays(new Date(), 5))
   const [endDate, setEndDate] = React.useState<Date | undefined>(addDays(new Date(), 5))
@@ -346,6 +360,7 @@ export function SellsTable() {
       setData(result.data)
     } catch (err: any) {
       setError(err.message || "Error fetching sales data")
+      toast.error("Error al cargar los datos de ventas")
     } finally {
       setLoading(false)
     }
@@ -372,24 +387,51 @@ export function SellsTable() {
       await response.json()
       setData((prev) => prev.filter((item) => !selectedIds.includes(item.id)))
       setRowSelection({})
+      toast.success("Ventas eliminadas correctamente")
     } catch (error: any) {
-      alert("Hubo un error al eliminar los registros.")
+      toast.error("Hubo un error al eliminar los registros")
     } finally {
       setDeleting(false)
     }
   }
 
+  const handleMarkAsPaid = async () => {
+    const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
+    if (selectedIds.length === 0) return
+
+    setMarkingAsPaid(true)
+    try {
+      const response = await fetch("https://easy-ferry.uc.r.appspot.com/mark-as-paid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds }),
+      })
+
+      if (!response.ok) throw new Error(`Error marking as paid: ${response.statusText}`)
+
+      await response.json()
+      setData(prev => prev.map(item => 
+        selectedIds.includes(item.id) ? {...item, payed: "Sí"} : item
+      ))
+      setRowSelection({})
+      toast.success("Ventas marcadas como pagadas correctamente")
+    } catch (error: any) {
+      toast.error("Hubo un error al marcar los registros como pagados")
+    } finally {
+      setMarkingAsPaid(false)
+    }
+  }
+
   const handleGenerateReport = async () => {
     if (!reportDate) {
-      alert("Por favor selecciona una fecha para el reporte");
-      return;
+      toast.warning("Por favor selecciona una fecha para el reporte")
+      return
     }
 
-    const business = localStorage.getItem("easyferry-business") || "";
-    const formattedDate = format(reportDate, "yyyy-MM-dd");
+    const business = localStorage.getItem("easyferry-business") || ""
+    const formattedDate = format(reportDate, "yyyy-MM-dd")
 
-    setGeneratingReport(true);
-    console.log(business);
+    setGeneratingReport(true)
     try {
       const response = await fetch("https://easy-ferry.uc.r.appspot.com/marine-report", {
         method: "POST",
@@ -399,41 +441,42 @@ export function SellsTable() {
           time: reportTime,
           date: formattedDate
         }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+        throw new Error(`Error: ${response.statusText}`)
       }
 
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
 
-      const contentDisposition = response.headers.get('Content-Disposition');
-      let fileName = 'reporte.xlsx';
+      const contentDisposition = response.headers.get('Content-Disposition')
+      let fileName = 'reporte.xlsx'
       if (contentDisposition) {
-        const fileNameMatch = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/i);
+        const fileNameMatch = contentDisposition.match(/filename\*?=['"]?(?:UTF-\d['"]*)?([^;\r\n"']*)['"]?;?/i)
         if (fileNameMatch && fileNameMatch[1]) {
           fileName = fileNameMatch[1]
             .replace(/^["']|["']$/g, '')
             .trim()
-            .replace(/_$/, ''); 
+            .replace(/_$/, '')
         }
       }
 
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
+      link.setAttribute('download', fileName)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(downloadUrl)
+      toast.success("Reporte generado correctamente")
 
     } catch (error) {
-      alert("Hubo un error al generar el reporte");
+      toast.error("Hubo un error al generar el reporte")
     } finally {
-      setGeneratingReport(false);
+      setGeneratingReport(false)
     }
-  };
+  }
 
   const table = useReactTable({
     data,
@@ -501,8 +544,18 @@ export function SellsTable() {
   return (
     <div className="flex-1 relative overflow-hidden">
       {Object.keys(rowSelection).some((key) => rowSelection[key]) && (
-        <div>
-          <Button variant="destructive" onClick={handleDeleteSelected} disabled={deleting}>
+        <div className="flex gap-2 mb-4">
+          <Button variant="default" onClick={handleMarkAsPaid} disabled={markingAsPaid || deleting}>
+            {markingAsPaid ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="animate-spin h-4 w-4" />
+                Marcando...
+              </span>
+            ) : (
+              <>Marcar como pagado ({Object.keys(rowSelection).filter((key) => rowSelection[key]).length})</>
+            )}
+          </Button>
+          <Button variant="destructive" onClick={handleDeleteSelected} disabled={deleting || markingAsPaid}>
             {deleting ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="animate-spin h-4 w-4" />
