@@ -53,14 +53,22 @@ export function SellCard({
   const [passport, setPassport] = React.useState(initialData?.passport ?? "");
   const [phone, setPhone] = React.useState(initialData?.phone ?? "");
   const [status, setStatus] = React.useState(initialData?.status ?? "");
+  const [mail, setMail] = React.useState(initialData?.mail ?? "");
   const [payed, setPayed] = React.useState<boolean>(
     typeof initialData?.payed === "string" 
       ? initialData.payed === "Si" 
       : initialData?.payed ?? true
   );
-  console.log(initialData);
   const [payment, setPayment] = React.useState(initialData?.payment ?? "efectivo");
   const [isLoading, setIsLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (payed === false) {
+      setPayment("credito");
+    } else {
+      setPayment("efectivo");
+    }
+  }, [payed]);
 
   const isFormValid =
     name.trim() !== "" &&
@@ -93,7 +101,8 @@ export function SellCard({
       passport,
       phone,
       status,
-      payed: Boolean(payed), // Aseguramos que sea booleano
+      mail,
+      payed: Boolean(payed),
       payment,
     };
 
@@ -126,6 +135,7 @@ export function SellCard({
           setPassport("");
           setPhone("");
           setStatus("");
+          setMail("");
           setPayed(true);
           setPayment("efectivo");
         }
@@ -273,7 +283,6 @@ export function SellCard({
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Embarcaciones</SelectLabel>
-                        <SelectLabel>Embarcaciones</SelectLabel>
                         {boatNames.map((boat) => (
                           <SelectItem key={boat} value={boat}>
                             {boat}
@@ -324,6 +333,19 @@ export function SellCard({
                   />
                 </div>
                 <div className="flex-1 grid gap-2">
+                  <Label htmlFor="mail">Correo electrónico</Label>
+                  <Input
+                    id="mail"
+                    type="email"
+                    value={mail}
+                    onChange={(e) => setMail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Fila 5 */}
+              <div className="flex gap-4">
+                <div className="flex-1 grid gap-2">
                   <Label htmlFor="status">Tipo de pasajero</Label>
                   <Select value={status} onValueChange={setStatus}>
                     <SelectTrigger className="w-full">
@@ -339,10 +361,6 @@ export function SellCard({
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-
-              {/* Fila 5 - Campos de pago */}
-              <div className="flex gap-4">
                 <div className="flex-1 grid gap-2">
                   <Label htmlFor="payed">¿Pagado?</Label>
                   <Select
@@ -375,13 +393,11 @@ export function SellCard({
                         <SelectItem value="efectivo">Efectivo</SelectItem>
                         <SelectItem value="transferencia">Transferencia</SelectItem>
                         <SelectItem value="tarjeta">Tarjeta</SelectItem>
+                        <SelectItem value="credito">Crédito</SelectItem>
                         <SelectItem value="otro">Otro</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="flex-1 grid gap-2">
-                  {/* Espacio vacío para mantener el diseño */}
                 </div>
               </div>
             </div>
