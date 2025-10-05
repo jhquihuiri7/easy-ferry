@@ -33,9 +33,9 @@ export function RegisterForm({
   const [lastName, setLastName] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [business, setBusiness] = React.useState("")
+  const [businessId, setBusinessId] = React.useState("")
   const [email, setEmail] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
-  const [isFetchingEmail, setIsFetchingEmail] = React.useState(false)
   const [isValidatingToken, setIsValidatingToken] = React.useState(true)
   const [isValidToken, setIsValidToken] = React.useState(false)
 
@@ -59,30 +59,19 @@ export function RegisterForm({
           router.push("/not-found")
           return
         }
-
+        setEmail(validationData.email)
+        setBusiness(validationData.business)
+        setBusinessId(validationData.business_id.toString())
         setIsValidToken(true)
 
-        // Then fetch the associated email
-        setIsFetchingEmail(true)
-        const emailResponse = await fetch(
-          `https://easy-ferry.uc.r.appspot.com/get-token-mail?token=${token}`
-        )
-        
-        if (!emailResponse.ok) {
-          throw new Error("Failed to fetch associated email")
-        }
-
-        const emailData = await emailResponse.json()
-        setEmail(emailData.email)
       } catch (error) {
         console.error("Error:", error)
         toast.error("Error", {
-          description: "No se pudo validar el token o obtener el email asociado",
+          description: "No se pudo validar el token",
         })
         router.push("/not-found")
       } finally {
         setIsValidatingToken(false)
-        setIsFetchingEmail(false)
       }
     }
 
@@ -125,7 +114,7 @@ export function RegisterForm({
       last_name: lastName,
       email,
       password,
-      business_id: parseInt(business, 10),
+      business_id: businessId,
       token
     }
 
@@ -192,12 +181,6 @@ export function RegisterForm({
             <div className="text-center text-sm">
               No tienes una cuenta, ¡regístrate!
             </div>
-            {isFetchingEmail && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Cargando información del token...
-              </div>
-            )}
             {email && (
               <div className="text-sm">
                 Registrando: <span className="font-medium">{email}</span>
@@ -231,23 +214,18 @@ export function RegisterForm({
                 onChange={(e) => setPassword(e.target.value)}
               />
               <Label htmlFor="business">Empresa</Label>
-              <Select value={business} onValueChange={setBusiness}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecciona una empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Empresa</SelectLabel>
-                    {/*<SelectItem value="1">Gaviota</SelectItem>*/}
-                    <SelectItem value="2">Viamar</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <Input
+                id="business"
+                type="text"
+                required
+                defaultValue={business}
+                disabled
+              />
             </div>
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isLoading || isFetchingEmail || !email}
+              disabled={isLoading || !email}
             >
               {isLoading ? (
                 <>
