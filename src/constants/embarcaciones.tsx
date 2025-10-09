@@ -19,5 +19,6 @@ export const boatNames: string[] = [
   "Susy Love",
   "Gladel",
   "Lancha Andrea",
-  "Luna Azul"
+  "Luna Azul",
+  "Logiciel 1"
 ];
