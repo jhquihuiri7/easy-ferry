@@ -137,7 +137,7 @@ export function SellCardMultiple({
       seller_email: email,
       business: business,
       name: passenger.name,
-      age: passenger.age === "" ? undefined : passenger.age,
+      age: passenger.age === "" ? 0 : passenger.age,
       price: price === "" ? 0 : price,
       route,
       time,
@@ -152,7 +152,7 @@ export function SellCardMultiple({
       payment,
       mail,
     }));
-
+    console.log(JSON.stringify(salesData))
     try {
       const response = await fetch("https://easy-ferry.uc.r.appspot.com/sales-multiple", {
         method: "POST",
