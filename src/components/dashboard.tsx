@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select'
 
 const ferry_1_capacity = 40
-const WARNING_THRESHOLD = 0.8 // 80% de capacidad
+const WARNING_THRESHOLD = 1 // 100% de capacidad
 
 const reservationsChartConfig = {
   views: {
@@ -411,12 +411,16 @@ export function Dashboard() {
                             {ferryReservationsData.map((entry, index) => {
                               const progress = entry.reservations / ferry_1_capacity
                               let fill = '#2b7fff'; // Color inicial
-                              if (progress > 0.5) {
-                                // Calcular interpolación entre azul (#2b7fff) y rojo (#ff4d4f)
-                                const r = Math.round(0x2b + (0xff - 0x2b) * (progress - 0.5) * 2);
-                                const g = Math.round(0x7f + (0x4d - 0x7f) * (progress - 0.5) * 2);
-                                const b = Math.round(0xff + (0x4f - 0xff) * (progress - 0.5) * 2);
+                              if (progress > 0.25) {
+                                // Calcular interpolación entre azul (#2b7fff) y azul oscuro (#0000b3)
+                                const t = (progress - 0.25) / 0.75;
+                                const r = Math.round(0x2b + (0x00 - 0x2b) * t);
+                                const g = Math.round(0x7f + (0x00 - 0x7f) * t);
+                                const b = Math.round(0xff + (0xb3 - 0xff) * t);
                                 fill = `rgb(${r}, ${g}, ${b})`;
+                              }
+                              if  (progress > 1){
+                                fill = '#ff4d4f'
                               }
                               return (
                                 <Cell key={`cell-${index}`} fill={fill} />

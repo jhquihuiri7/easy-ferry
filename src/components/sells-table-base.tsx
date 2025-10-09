@@ -71,11 +71,11 @@ export type Sale = {
   seller: string
   passport: string
   phone: string
-  status: string,
-  notes: string,
-  payed: string,
-  payment: string,
-  price: number // Nuevo campo como number
+  status: string
+  notes: string
+  payed: string
+  payment: string
+  price: number
 }
 
 export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
@@ -284,21 +284,35 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
                   isEdit={true}
                   onSuccess={() => {
                     setIsDialogOpen(false)
-                    refetch() // ✅ Refrescar la tabla
+                    refetch()
                   }}
                 />
               </DialogContent>
             </Dialog>
-            {/*<DropdownMenuItem>
-              <Ticket className="mr-2 h-4 w-4" />
-              Ticket
-            </DropdownMenuItem>*/}
           </DropdownMenuContent>
         </DropdownMenu>
       )
     },
   },
 ]
+
+const columnNamesInSpanish: Record<string, string> = {
+  name: "Nombre",
+  age: "Edad",
+  route: "Ruta",
+  time: "Horario",
+  ferry: "Ferry",
+  intermediary: "Intermediario",
+  date: "Fecha",
+  seller: "Vendedor",
+  passport: "Pasaporte",
+  phone: "Teléfono",
+  status: "Estado",
+  notes: "Notas",
+  payed: "Pagado",
+  payment: "Método pago",
+  price: "Precio",
+}
 
 export function SellsTableBase() {
   const [data, setData] = React.useState<Sale[]>([])
@@ -385,14 +399,14 @@ export function SellsTableBase() {
 
   const handleGenerateReport = async () => {
     if (!reportDate) {
-      alert("Por favor selecciona una fecha para el reporte");
-      return;
+      alert("Por favor selecciona una fecha para el reporte")
+      return
     }
 
-    const business = localStorage.getItem("easyferry-business") || "";
-    const formattedDate = format(reportDate, "yyyy-MM-dd");
+    const business = localStorage.getItem("easyferry-business") || ""
+    const formattedDate = format(reportDate, "yyyy-MM-dd")
 
-    setGeneratingReport(true);
+    setGeneratingReport(true)
     try {
       const response = await fetch("https://easy-ferry.uc.r.appspot.com/marine-report", {
         method: "POST",
@@ -402,40 +416,40 @@ export function SellsTableBase() {
           time: reportTime,
           date: formattedDate
         }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+        throw new Error(`Error: ${response.statusText}`)
       }
 
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
 
-      const contentDisposition = response.headers.get('Content-Disposition');
-      let fileName = 'reporte.xlsx';
+      const contentDisposition = response.headers.get('Content-Disposition')
+      let fileName = 'reporte.xlsx'
 
       if (contentDisposition) {
-        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/)
         if (fileNameMatch && fileNameMatch[1]) {
-          fileName = fileNameMatch[1];
+          fileName = fileNameMatch[1]
         }
       }
 
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
+      link.setAttribute('download', fileName)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(downloadUrl)
 
     } catch (error) {
-      console.error("Error al generar el reporte:", error);
-      alert("Hubo un error al generar el reporte");
+      console.error("Error al generar el reporte:", error)
+      alert("Hubo un error al generar el reporte")
     } finally {
-      setGeneratingReport(false);
+      setGeneratingReport(false)
     }
-  };
+  }
 
   const table = useReactTable({
     data,
@@ -525,7 +539,7 @@ export function SellsTableBase() {
           <div className="flex items-center justify-between py-4 flex-wrap gap-4">
             <div className="flex items-center gap-4 flex-wrap">
               <Input
-                placeholder={`Filtrar por ${filterColumn}...`}
+                placeholder={`Filtrar por ${columnNamesInSpanish[filterColumn] || filterColumn}...`}
                 value={filterValue}
                 onChange={(e) => setFilterValue(e.target.value)}
                 className="w-[200px]"
@@ -533,7 +547,7 @@ export function SellsTableBase() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
-                    Columna: {filterColumn} <ChevronDown className="h-4 w-4" />
+                    Columna: {columnNamesInSpanish[filterColumn] || filterColumn} <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -549,7 +563,7 @@ export function SellsTableBase() {
                           setFilterValue("")
                         }}
                       >
-                        {column.id}
+                        {columnNamesInSpanish[column.id] || column.id}
                       </DropdownMenuItem>
                     ))}
                 </DropdownMenuContent>

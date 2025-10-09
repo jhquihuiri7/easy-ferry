@@ -309,6 +309,25 @@ export const columns = (refetch: () => void): ColumnDef<Sale>[] => [
   },
 ]
 
+const columnNamesInSpanish: Record<string, string> = {
+  name: "Nombre",
+  age: "Edad",
+  route: "Ruta",
+  time: "Horario",
+  ferry: "Ferry",
+  price: "Precio",
+  intermediary: "Intermediario",
+  date: "Fecha",
+  seller: "Vendedor",
+  passport: "Pasaporte",
+  phone: "Teléfono",
+  status: "Estado",
+  notes: "Notas",
+  payed: "Pagado",
+  payment: "Método pago",
+  mail: "Email",
+}
+
 export function SellsTable() {
   const [data, setData] = React.useState<Sale[]>([])
   const [loading, setLoading] = React.useState(false)
@@ -339,7 +358,6 @@ export function SellsTable() {
       setColumnFilters([])
     }
   }, [filterColumn, filterValue])
-  
 
   const fetchSales = async () => {
     const business = localStorage.getItem("easyferry-business") || ""
@@ -577,7 +595,7 @@ export function SellsTable() {
           <div className="flex items-center justify-between py-4 flex-wrap gap-4">
             <div className="flex items-center gap-4 flex-wrap">
               <Input
-                placeholder={`Filtrar por ${filterColumn}...`}
+                placeholder={`Filtrar por ${columnNamesInSpanish[filterColumn] || filterColumn}...`}
                 value={filterValue}
                 onChange={(e) => setFilterValue(e.target.value)}
                 className="w-[200px]"
@@ -585,7 +603,7 @@ export function SellsTable() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
-                    Columna: {filterColumn} <ChevronDown className="h-4 w-4" />
+                    Columna: {columnNamesInSpanish[filterColumn] || filterColumn} <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -601,7 +619,7 @@ export function SellsTable() {
                           setFilterValue("")
                         }}
                       >
-                        {column.id}
+                        {columnNamesInSpanish[column.id] || column.id}
                       </DropdownMenuItem>
                     ))}
                 </DropdownMenuContent>
