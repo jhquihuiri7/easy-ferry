@@ -339,6 +339,7 @@ export function SellsTable() {
       setColumnFilters([])
     }
   }, [filterColumn, filterValue])
+  
 
   const fetchSales = async () => {
     const business = localStorage.getItem("easyferry-business") || ""

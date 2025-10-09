@@ -132,7 +132,6 @@ export function SellCardMultiple({
     const email = localStorage.getItem("easyferry-email") || "";
     const formattedDate = date?.toISOString().split("T")[0];
 
-    // Estructurar los datos como un array de ventas, una por cada pasajero
     const salesData = passengers.map(passenger => ({
       seller_email: email,
       business: business,

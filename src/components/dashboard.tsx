@@ -395,11 +395,11 @@ export function Dashboard() {
                                 }}
                                 formatter={(value, name) => {
                                   if (name === 'available') {
-                                    return [`${value} disponibles`, 'Disponible']
+                                    return [`${value} `, 'Disponible']
                                   } else if (name === 'warning') {
-                                    return [`${value} reservas (alta demanda)`, 'Alerta']
+                                    return [`${value} `, 'Reservas (alta demanda)']
                                   } else {
-                                    return [`${value} reservas`, 'Reservas']
+                                    return [`${value} `, 'Reservas']
                                   }
                                 }}
                                 indicator="dot"
